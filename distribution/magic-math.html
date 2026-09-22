@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#6C4FD1" />
+<title>חשבון קסם</title>
+<style>
+  :root {
+    color-scheme: light;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: #f5f2ff;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Helvetica Neue", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  /* ---- launcher-owned shell: loading + error only ---- */
+  #launcher-shell {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(180deg, #6c4fd1 0%, #b892e8 100%);
+    z-index: 1000;
+  }
+  .launcher-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 40px 28px;
+    text-align: center;
+    width: min(90vw, 380px);
+    box-shadow: 0 20px 50px rgba(40, 20, 90, 0.35);
+  }
+  .launcher-sparkle { font-size: 48px; }
+  .launcher-title { font-size: 26px; margin: 8px 0 4px; color: #3a2a63; }
+  .launcher-text { color: #6d5a99; margin: 0 0 18px; font-size: 15px; }
+  .launcher-progress-track {
+    height: 14px; background: #f6f1ff; border-radius: 999px;
+    overflow: hidden; border: 2px solid #e5daff;
+  }
+  .launcher-progress-fill {
+    height: 100%; width: 30%;
+    background: linear-gradient(90deg, #ff6b9d, #ff9f43);
+    border-radius: 999px;
+    animation: launcher-indeterminate 1.3s ease-in-out infinite;
+  }
+  @keyframes launcher-indeterminate {
+    0% { margin-right: 0%; width: 20%; }
+    50% { margin-right: 60%; width: 40%; }
+    100% { margin-right: 100%; width: 5%; }
+  }
+  .launcher-error-icon { font-size: 44px; }
+  .launcher-error-text { color: #3a2a63; font-size: 16px; line-height: 1.6; margin: 10px 0 20px; white-space: pre-line; }
+  .launcher-retry-btn {
+    border: none; border-radius: 999px;
+    background: linear-gradient(90deg, #4cd97b, #2fbf71);
+    color: #fff; font-size: 18px; font-weight: 800;
+    padding: 14px 28px; min-height: 52px; width: 100%;
+  }
+  .launcher-retry-btn:active { transform: scale(0.97); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .launcher-progress-fill { animation: none; width: 60%; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Everything the remote app renders lives here. -->
+  <div id="magic-math-app-root"></div>
+
+  <!-- Launcher-owned loading/error shell, removed once the remote app boots. -->
+  <div id="launcher-shell">
+    <div class="launcher-card" id="launcher-loading">
+      <div class="launcher-sparkle" aria-hidden="true">✨</div>
+      <h1 class="launcher-title">חשבון קסם</h1>
+      <p class="launcher-text">מכינים את הקסם...</p>
+      <div class="launcher-progress-track"><div class="launcher-progress-fill"></div></div>
+    </div>
+    <div class="launcher-card" id="launcher-error" hidden>
+      <div class="launcher-error-icon" aria-hidden="true">😕</div>
+      <p class="launcher-error-text">אופס! הקסם לא נטען.
+בדקו שיש חיבור לאינטרנט ונסו שוב.</p>
+      <button type="button" class="launcher-retry-btn" id="launcher-retry-btn">נסו שוב</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  // The remote content this launcher pulls its game from. This is not a
+  // secret — the game lives in the open GitHub repo; hardcoding it here
+  // just keeps the distributed file self-contained and simple to open.
+  // Override with ?base=https://example.com/remote/ for local testing.
+  var DEFAULT_REMOTE_BASE = 'https://rdwr-valentineg.github.io/magic-math/remote/';
+
+  function resolveRemoteBase() {
+    var params = new URLSearchParams(window.location.search);
+    var override = params.get('base');
+    var base = override || DEFAULT_REMOTE_BASE;
+    if (base.charAt(base.length - 1) !== '/') base += '/';
+    return base;
+  }
+
+  var REMOTE_BASE = resolveRemoteBase();
+
+  var shellEl = document.getElementById('launcher-shell');
+  var loadingEl = document.getElementById('launcher-loading');
+  var errorEl = document.getElementById('launcher-error');
+  var retryBtn = document.getElementById('launcher-retry-btn');
+  var rootEl = document.getElementById('magic-math-app-root');
+
+  function showLoading() {
+    shellEl.hidden = false;
+    loadingEl.hidden = false;
+    errorEl.hidden = true;
+  }
+
+  function showError() {
+    shellEl.hidden = false;
+    loadingEl.hidden = true;
+    errorEl.hidden = false;
+  }
+
+  function hideShell() {
+    shellEl.hidden = true;
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var el = document.createElement('script');
+      el.src = src;
+      el.async = false;
+      el.onload = function () { resolve(); };
+      el.onerror = function () { reject(new Error('script failed to load: ' + src)); };
+      document.body.appendChild(el);
+    });
+  }
+
+  function loadStylesheet(href) {
+    return new Promise(function (resolve, reject) {
+      var el = document.createElement('link');
+      el.rel = 'stylesheet';
+      el.href = href;
+      el.onload = function () { resolve(); };
+      el.onerror = function () { reject(new Error('stylesheet failed to load: ' + href)); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function fetchConfig() {
+    var url = REMOTE_BASE + 'config.json?t=' + Date.now();
+    return fetch(url, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('config.json responded ' + res.status);
+      return res.json();
+    });
+  }
+
+  function boot() {
+    showLoading();
+    fetchConfig()
+      .then(function (config) {
+        if (!config || !config.version) throw new Error('config.json missing version');
+        var v = encodeURIComponent(config.version);
+        return Promise.all([
+          loadStylesheet(REMOTE_BASE + 'styles.css?v=' + v),
+          loadScript(REMOTE_BASE + 'app.js?v=' + v)
+        ]).then(function () { return config; });
+      })
+      .then(function (config) {
+        if (!window.MagicMathApp || typeof window.MagicMathApp.init !== 'function') {
+          throw new Error('remote app.js did not register MagicMathApp.init');
+        }
+        window.MagicMathApp.init({ root: rootEl, remoteBase: REMOTE_BASE, config: config });
+        hideShell();
+      })
+      .catch(function (err) {
+        // Never surface technical details to the child — just log for us.
+        window.console && console.error('[magic-math launcher]', err);
+        rootEl.innerHTML = '';
+        showError();
+      });
+  }
+
+  retryBtn.addEventListener('click', boot);
+
+  boot();
+})();
+</script>
+</body>
+</html>

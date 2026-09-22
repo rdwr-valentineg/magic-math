@@ -1,0 +1,55 @@
+EXTRACTION NOTES - rainbow (RAINBOW) - magic-math-rainbow-assets
+============================================================
+Source: rainbow.png (single 1536x1024 sheet). Character identified automatically: RAINBOW.
+Method: every asset was cropped from the supplied sheet only - nothing was redrawn, regenerated or reinterpreted. Transparent assets were cut with a
+background-model + alpha-matting pass (edge pixels re-estimated to remove the sheet's white halo). Opaque backgrounds are plain crops. All files are lossless WebP.
+No text or elements were added.
+
+FILES EXPORTED PER CATEGORY
+  character/    5  (4 poses + select.webp fallback)
+  backgrounds/  4
+  environment/  11
+  decorations/  9
+  icons/        9
+  TOTAL         38 WebP files + character.json + this file
+
+RESOLUTION WARNING (important)
+  The source sheet is only 1536x1024, so every asset is small (characters ~200 px tall, icons 35-130 px, backgrounds ~270-470 px wide).
+  Nothing was upscaled (per brief). For sharper art, regenerate the sheet at a higher resolution and repeat the extraction.
+
+SELECT.WEBP - SOURCE / FALLBACK
+  FALLBACK USED: select.webp is an exact copy of idle.webp.
+  Reason: in the HOME / CHARACTER SELECT scene the character is clipped by the panel edge and overlaps the painted scene, so it cannot be isolated without inventing missing artwork.
+
+CHARACTER STATES
+  idle / happy / try-again / celebration (and select) share ONE canvas: 223x209 px, each pose centred horizontally on its body, native scale, and kept at the
+  same vertical position the sheet draws them (so jump/celebration poses stay airborne relative to the ground line). No pose was rescaled.
+  Body size per pose (width x height, px): idle 174x131, happy 166x138, try-again 172x132, celebration 182x149.
+  Particles/confetti/sparkles/speech marks that belong to a pose are kept inside that pose's file.
+  Soft ground shadows are kept as semi-transparent tint where they could be separated from the artwork. (Not kept for this character: white cloud bases made shadow separation unreliable.)
+
+BACKGROUNDS
+  Cropped 5 px inside each panel to drop rounded corners/borders; no headings or borders remain; opaque, no transparent holes.
+  game 349x428, celebration 352x428, try-again 300x428, distant 430x212 (panels differ in aspect ratio).
+  The HOME / CHARACTER SELECT scene was deliberately NOT used as a background.
+
+DUPLICATES SKIPPED (same artwork appears in two sections; one copy kept)
+  deco balloon (same as bonus-balloon), deco small plain cloud (same as bonus-cloud), deco star duplicates (only star-small kept), tiny sparkle bits
+
+GENERIC APP CONTROLS SKIPPED
+  none in the icons/decorations sections. The whole global UI section 06 (panels, buttons, stars, hearts, gems, + - x /, home, sound, settings, close) was not extracted.
+
+NOT EXTRACTED / DROPPED
+  cloud banks / ground petals / small stars scattered in the environment strip.
+  Decorative UI panels were not extracted. Objects that do not exist as separate elements on this sheet have no file.
+
+QUESTIONABLE ASSETS / KNOWN LIMITATIONS
+  - The rainbow's white cloud bases are almost the same colour as the sheet background. Character poses were cut with no shadow layer (a ground shadow would have eaten the clouds); pale rim pixels may remain on the clouds.
+  - Clouds in decorations/icons/environment were extracted with a gentler pass; enclosed gaps were repaired from the source pixels.
+  - decorations/signpost.webp is the DREAM / LEARN / GROW signpost together with the small crystal and cloud at its base (they touch in the sheet). The English text is part of the artwork.
+  - Environment pieces overlapping in the source were cut along narrow connections (finial-pillar, heart-balustrade, rainbow-arch, crystal-cluster/mound, pillar-planter*).
+  - The source has a soft baked-in glow/shadow around most objects. Where recognisable as shadow it became semi-transparent tint; a very faint pale rim may remain on some pieces (visible only on dark backgrounds).
+  - Environment/decoration pieces that touch in the sheet were separated automatically with seed points; check edges before use.
+
+OTHER
+  Several character sheets were supplied together; this package contains only the RAINBOW sheet.

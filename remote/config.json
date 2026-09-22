@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "numberRanges": [10, 20, 50, 100],
+  "operations": [
+    { "id": "add", "symbol": "+" },
+    { "id": "sub", "symbol": "−" },
+    { "id": "mul", "symbol": "×" },
+    { "id": "div", "symbol": "÷" }
+  ],
+  "characters": [
+    {
+      "id": "unicorn",
+      "name": "יוניקורן",
+      "theme": { "from": "#dceeff", "to": "#f5ddff", "accent": "#8b6fe6", "dark": false }
+    },
+    {
+      "id": "princess",
+      "name": "נסיכה",
+      "theme": { "from": "#fff0fb", "to": "#ffe9b8", "accent": "#caa0e0", "dark": false }
+    },
+    {
+      "id": "kitten",
+      "name": "חתלתול",
+      "theme": { "from": "#fff7f0", "to": "#ecd9f7", "accent": "#e39fc2", "dark": false }
+    },
+    {
+      "id": "rainbow",
+      "name": "קשת",
+      "theme": { "from": "#fff0f6", "to": "#dff3ff", "accent": "#ff9ecb", "dark": false }
+    },
+    {
+      "id": "dragon",
+      "name": "דרקון",
+      "theme": { "from": "#241b3a", "to": "#4b2a6b", "accent": "#9b7dff", "dark": true }
+    },
+    {
+      "id": "race-car",
+      "name": "מכונית מירוץ",
+      "theme": { "from": "#fff4dd", "to": "#ffd9d0", "accent": "#ff5a3c", "dark": false }
+    }
+  ]
+}

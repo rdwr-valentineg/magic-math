@@ -1,0 +1,81 @@
+EXTRACTION NOTES - princess (magic-math-princess-assets)
+=====================================================
+Source: princes.png (single 1536x1024 sheet). Character identified automatically: PRINCESS.
+Method: assets were cropped from the supplied sheet only - nothing was redrawn, regenerated or
+reinterpreted. Transparent assets were cut with a background-model + alpha-matting pass (edge pixels
+re-estimated to remove the sheet's white halo). Interior artwork is unchanged (mean colour difference
+vs source on opaque pixels < 0.3 / 255). All files are lossless WebP. No text or elements were added.
+
+FILES EXPORTED PER CATEGORY
+  character/    5  (4 poses + select.webp fallback)
+  backgrounds/  4
+  environment/  5
+  decorations/  12
+  icons/        7
+  TOTAL         33 WebP files + character.json + this file
+
+RESOLUTION WARNING (important)
+  The source sheet is only 1536x1024, so every asset is small: characters ~250 px tall, icons 60-130 px,
+  backgrounds 268-417 px wide. Nothing was upscaled (per brief). If the game needs sharper art, the sheet
+  should be regenerated at a higher resolution and this same extraction repeated.
+
+SELECT.WEBP - SOURCE / FALLBACK
+  FALLBACK USED: select.webp is an exact copy of idle.webp.
+  Reason: the character in the HOME / CHARACTER SELECT scene is clipped by the panel edge (dress and hair
+  run off the frame) and her hair blends into the painted scene, so she cannot be isolated without
+  inventing missing artwork.
+
+CHARACTER STATES
+  idle / happy / try-again / celebration (and select) share ONE canvas: 245x298 px.
+  - Scale left at native source scale (tiara gem is 12-13 px wide in all four poses = consistent).
+  - Feet baseline is on the same row (y=279) in every state; skirt is horizontally centred (x=122).
+    Suggested pivot: bottom-centre of the feet, i.e. (122, 279) - switching states will not make her jump.
+  - Because of the shared canvas, the character files are NOT tightly trimmed (happy/celebration arms,
+    wand and stars set the canvas width). Safe padding is ~4%.
+  - celebration.webp keeps its stars, sparkles and confetti as part of the pose (they are particles
+    belonging to that state, not separable without cutting artwork).
+  - Soft ground shadows under the feet are kept as semi-transparent lavender.
+  - Enclosed white gaps between hair curls were made transparent (they are background showing through).
+    A few small soft-white hair highlights remain and are treated as artwork.
+
+BACKGROUNDS
+  Cropped 5 px inside each panel to drop rounded corners / borders (no headings or borders remain).
+  Opaque RGB, no transparent holes. Sizes: game 390x414, celebration 347x414, try-again 268x414,
+  distant 417x193 (different aspect ratios - the sheet panels are not the same shape).
+  HOME / CHARACTER SELECT scene deliberately NOT used as a background.
+
+ENVIRONMENT (5)
+  balustrade, rose-arch, flower-urn (urn on pedestal), banner, pillar. Gaps between balusters are
+  transparent. Soft ground shadows kept where present (semi-transparent).
+
+DECORATIONS (12)
+  tiara, butterfly, ribbon, magic-wand, rose (rose + its 3 leaves as one piece), leaf,
+  petal-01..petal-04, heart-petals, leaf-sprig.
+  heart-petals and leaf-sprig come from the ENVIRONMENT strip (small loose decorative pieces).
+
+ICONS (7)
+  progress-star, progress-heart, progress-gem, bonus-crown, bonus-medal, bonus-bow, bonus-laurel-wreath.
+
+NOT EXTRACTED (and why)
+  - Section 01 HOME / CHARACTER SELECT scene as a background (per brief; global Welcome background).
+  - Section 06 UI ELEMENTS (GLOBAL): panels, buttons, plus/minus/multiply/divide, home/sound/settings/close,
+    and its star/heart/gem progress icons (generic UI, per brief).
+  - Section 07 gold star and gem heart: visually identical to icons/progress-star and icons/progress-heart
+    (icon versions are slightly larger), so no duplicate files were created.
+  - Loose ground petals scattered around the environment objects, plus the petal pair and small petal on the
+    right of the environment strip: same look as petal-01..04, skipped as duplicates/scatter.
+  - rainbow, sparkle, confetti, flame, crystal: these do not exist as separate objects on this sheet
+    (the rainbow only appears inside scene paintings), so no files were made for them.
+  - Decorative UI panels: not extracted (not character-themed reusable assets).
+
+QUESTIONABLE ASSETS / KNOWN LIMITATIONS
+  - petal-01 and petal-04 look very similar (only rotation/curl differ); kept as variants.
+  - The source has soft baked-in glow/shadow around most objects. Where recognisable as a shadow it was
+    converted to semi-transparent lavender; a very faint pale rim may remain on a few gold/pink pieces
+    (visible only on dark backgrounds): tiara, magic-wand, ribbon, heart-petals.
+  - leaf-sprig has a small white highlight where the stems meet (present in the source).
+  - No separate drop shadows were kept for floating decorations/icons (they had only a faint glow).
+
+OTHER
+  - The upload folder also contained rainbow.png (a different character's sheet, "Rainbow"). It was not
+    part of this request and was not used.

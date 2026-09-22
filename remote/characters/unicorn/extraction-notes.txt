@@ -1,0 +1,55 @@
+EXTRACTION NOTES - unicorn (UNICORN) - magic-math-unicorn-assets
+============================================================
+Source: unicorn.png (single 1536x1024 sheet). Character identified automatically: UNICORN.
+Method: every asset was cropped from the supplied sheet only - nothing was redrawn, regenerated or reinterpreted. Transparent assets were cut with a
+background-model + alpha-matting pass (edge pixels re-estimated to remove the sheet's white halo). Opaque backgrounds are plain crops. All files are lossless WebP.
+No text or elements were added.
+
+FILES EXPORTED PER CATEGORY
+  character/    5  (4 poses + select.webp fallback)
+  backgrounds/  4
+  environment/  9
+  decorations/  10
+  icons/        8
+  TOTAL         36 WebP files + character.json + this file
+
+RESOLUTION WARNING (important)
+  The source sheet is only 1536x1024, so every asset is small (characters ~200 px tall, icons 35-130 px, backgrounds ~270-470 px wide).
+  Nothing was upscaled (per brief). For sharper art, regenerate the sheet at a higher resolution and repeat the extraction.
+
+SELECT.WEBP - SOURCE / FALLBACK
+  FALLBACK USED: select.webp is an exact copy of idle.webp.
+  Reason: in the HOME / CHARACTER SELECT scene the character is clipped by the panel edge and overlaps the painted scene, so it cannot be isolated without inventing missing artwork.
+
+CHARACTER STATES
+  idle / happy / try-again / celebration (and select) share ONE canvas: 255x252 px, each pose centred horizontally on its body, native scale, and kept at the
+  same vertical position the sheet draws them (so jump/celebration poses stay airborne relative to the ground line). No pose was rescaled.
+  Body size per pose (width x height, px): idle 151x197, happy 164x217, try-again 157x186, celebration 172x223.
+  Particles/confetti/sparkles/speech marks that belong to a pose are kept inside that pose's file.
+  Soft ground shadows are kept as semi-transparent tint where they could be separated from the artwork.
+
+BACKGROUNDS
+  Cropped 5 px inside each panel to drop rounded corners/borders; no headings or borders remain; opaque, no transparent holes.
+  game 396x426, celebration 331x426, try-again 279x426, distant 422x209 (panels differ in aspect ratio).
+  The HOME / CHARACTER SELECT scene was deliberately NOT used as a background.
+
+DUPLICATES SKIPPED (same artwork appears in two sections; one copy kept)
+  deco star (same as progress-star); second small cloud icon (near-identical to bonus-cloud); several tiny extra sparkle/star bits from the decorations strip (only the one large sparkle kept)
+
+GENERIC APP CONTROLS SKIPPED
+  none in the icons/decorations sections (generic play/home/sound/settings/close/plus/minus/multiply/divide only exist in the global UI section, which was skipped). The whole global UI section 06 (panels, buttons, stars, hearts, gems, + - x /, home, sound, settings, close) was not extracted.
+
+NOT EXTRACTED / DROPPED
+  loose cloud banks and cloud-base pieces from the environment strip (cloud-only scatter, no scene-building object); the floating islands in section 09 are NOT exported individually.
+  Decorative UI panels were not extracted. Objects that do not exist as separate elements on this sheet have no file.
+
+QUESTIONABLE ASSETS / KNOWN LIMITATIONS
+  - backgrounds/distant.webp: unicorn section 09 is NOT a scene painting - it is a set of floating islands and clouds on a white panel. Exported as-is (opaque, white background). The islands could be cut out individually if wanted.
+  - White clouds sit on/around several objects (arch, balustrade, crystal-cluster, flower-cloud-*). Clouds were extracted with a gentler pass, so a faint pale rim can remain and cloud edges are soft.
+  - decorations/rainbow-cloud.webp and cloud.webp: cloud interiors were repaired by filling enclosed gaps with the original sheet pixels.
+  - environment/crystal-pillar.webp: the base of this pillar is hidden behind the flower mound, so only the upper part is separate.
+  - The source has a soft baked-in glow/shadow around most objects. Where recognisable as shadow it became semi-transparent tint; a very faint pale rim may remain on some pieces (visible only on dark backgrounds).
+  - Environment/decoration pieces that touch in the sheet were separated automatically with seed points; check edges before use.
+
+OTHER
+  Several character sheets were supplied together; this package contains only the UNICORN sheet.

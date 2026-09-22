@@ -1,0 +1,58 @@
+EXTRACTION NOTES - car (RACE CAR) - magic-math-car-assets
+============================================================
+Source: car.png (single 1536x1024 sheet). Character identified automatically: RACE CAR.
+Method: every asset was cropped from the supplied sheet only - nothing was redrawn, regenerated or reinterpreted. Transparent assets were cut with a
+background-model + alpha-matting pass (edge pixels re-estimated to remove the sheet's white halo). Opaque backgrounds are plain crops. All files are lossless WebP.
+No text or elements were added.
+
+FILES EXPORTED PER CATEGORY
+  character/    5  (4 poses + select.webp fallback)
+  backgrounds/  4
+  environment/  4
+  decorations/  6
+  icons/        8
+  TOTAL         27 WebP files + character.json + this file
+
+RESOLUTION WARNING (important)
+  The source sheet is only 1536x1024, so every asset is small (characters ~200 px tall, icons 35-130 px, backgrounds ~270-470 px wide).
+  Nothing was upscaled (per brief). For sharper art, regenerate the sheet at a higher resolution and repeat the extraction.
+
+SELECT.WEBP - SOURCE / FALLBACK
+  FALLBACK USED: select.webp is an exact copy of idle.webp.
+  Reason: in the HOME / CHARACTER SELECT scene the character is clipped by the panel edge and overlaps the painted scene, so it cannot be isolated without inventing missing artwork.
+
+CHARACTER STATES
+  idle / happy / try-again / celebration (and select) share ONE canvas: 271x227 px, each pose centred horizontally on its body, native scale, and kept at the
+  same vertical position the sheet draws them (so jump/celebration poses stay airborne relative to the ground line). No pose was rescaled.
+  Body size per pose (width x height, px): idle 172x128, happy 162x135, try-again 173x125, celebration 169x136.
+  Particles/confetti/sparkles/speech marks that belong to a pose are kept inside that pose's file.
+  Soft ground shadows are kept as semi-transparent tint where they could be separated from the artwork.
+
+BACKGROUNDS
+  Cropped 5 px inside each panel to drop rounded corners/borders; no headings or borders remain; opaque, no transparent holes.
+  game 348x422, celebration 340x422, try-again 332x422, distant 409x204 (panels differ in aspect ratio).
+  The HOME / CHARACTER SELECT scene was deliberately NOT used as a background.
+  !! QUESTIONABLE: backgrounds/celebration.webp and backgrounds/try-again.webp have the CHARACTER PAINTED INTO THE SCENE (plus a Hebrew sign/text such as 'כל הכבוד!' with stars).
+     Exported exactly as they appear on the sheet, as requested, but they cannot be used as an empty background under the character sprite without the character showing twice.
+     They cannot be cleaned without redrawing, which the brief forbids. Consider regenerating these two scenes without the character.
+  !! backgrounds/game.webp also contains Hebrew signposts ('צעדים קטנים / להרפתקאות / גדולות' style text) painted into the scene.
+
+DUPLICATES SKIPPED (same artwork appears in two sections; one copy kept)
+  deco checkered flag, traffic cone and tyre (same as bonus-checkered-flag / bonus-cone / bonus-tire)
+
+GENERIC APP CONTROLS SKIPPED
+  none in the icons/decorations sections. The whole global UI section 06 (panels, buttons, stars, hearts, gems, + - x /, home, sound, settings, close) was not extracted.
+
+NOT EXTRACTED / DROPPED
+  tire-stack, guardrail-with-curb, chevron sign and the right-hand rocks/trees: the environment section is ONE continuous diorama (road, curbs, rocks and foliage fused) and these pieces could not be separated without damaging them.
+  Decorative UI panels were not extracted. Objects that do not exist as separate elements on this sheet have no file.
+
+QUESTIONABLE ASSETS / KNOWN LIMITATIONS
+  - environment/tunnel.webp is the tunnel together with the road/curb/tyres/foliage that are fused to it.
+  - environment/flag-left.webp and flag-right.webp are thin poles with small foliage at the base.
+  - environment/stone-bridge.webp edges are cut through foliage at its feet.
+  - The source has a soft baked-in glow/shadow around most objects. Where recognisable as shadow it became semi-transparent tint; a very faint pale rim may remain on some pieces (visible only on dark backgrounds).
+  - Environment/decoration pieces that touch in the sheet were separated automatically with seed points; check edges before use.
+
+OTHER
+  Several character sheets were supplied together; this package contains only the RACE CAR sheet.

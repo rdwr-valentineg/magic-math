@@ -1,0 +1,60 @@
+{
+  "id": "rainbow",
+  "character": {
+    "select": "character/select.webp",
+    "idle": "character/idle.webp",
+    "happy": "character/happy.webp",
+    "tryAgain": "character/try-again.webp",
+    "celebration": "character/celebration.webp"
+  },
+  "backgrounds": {
+    "game": "backgrounds/game.webp",
+    "celebration": "backgrounds/celebration.webp",
+    "tryAgain": "backgrounds/try-again.webp",
+    "distant": "backgrounds/distant.webp"
+  },
+  "environment": [
+    "environment/crystal-cluster.webp",
+    "environment/crystal-mound.webp",
+    "environment/finial-pillar.webp",
+    "environment/floating-island.webp",
+    "environment/heart-arch.webp",
+    "environment/heart-balustrade.webp",
+    "environment/heart-signpost.webp",
+    "environment/pillar-planter-02.webp",
+    "environment/pillar-planter.webp",
+    "environment/rainbow-arch.webp",
+    "environment/rainbow-bridge.webp"
+  ],
+  "decorations": [
+    "decorations/butterfly.webp",
+    "decorations/cloud-smile.webp",
+    "decorations/crystal.webp",
+    "decorations/heart.webp",
+    "decorations/rainbow-trail.webp",
+    "decorations/signpost.webp",
+    "decorations/sparkle-star.webp",
+    "decorations/star-small.webp",
+    "decorations/star-smile.webp"
+  ],
+  "icons": [
+    "icons/bonus-balloon.webp",
+    "icons/bonus-bow.webp",
+    "icons/bonus-cloud.webp",
+    "icons/bonus-medal.webp",
+    "icons/bonus-moon.webp",
+    "icons/bonus-rainbow.webp",
+    "icons/progress-gem.webp",
+    "icons/progress-heart.webp",
+    "icons/progress-star.webp"
+  ],
+  "audio": {
+    "start": [],
+    "correct": [],
+    "wrong": [],
+    "bonus3": [],
+    "bonus6": [],
+    "bonus9": [],
+    "finish": []
+  }
+}
