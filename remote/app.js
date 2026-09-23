@@ -634,7 +634,8 @@ var MagicMathApp = (function () {
         state.screen = SCREEN.SETTINGS;
         render();
       })
-      .catch(function () {
+      .catch(function (err) {
+        window.console && console.error('[magic-math] character load failed', err);
         state.charactersLoading = false;
         if (statusEl) statusEl.textContent = 'אופס, לא הצלחנו לטעון את הדמות. בדקו חיבור לאינטרנט ונסו שוב.';
       });
@@ -664,21 +665,33 @@ var MagicMathApp = (function () {
     var maxValueEl = h('span', { class: 'range-value', text: String(state.rangeMax) });
     var minSlider, maxSlider;
 
+    // Dragging one handle past the safe gap PUSHES the other handle along
+    // with it (the standard dual-range-slider behavior), instead of just
+    // refusing to move — a handle that silently stops responding reads as
+    // the UI being stuck/broken, even though it was "working as designed".
     minSlider = h('input', {
       type: 'range', class: 'range-slider', min: rangeAbs.min, max: rangeAbs.max, step: 1, value: state.rangeMin,
       onInput: function (e) {
         var v = parseInt(e.target.value, 10);
-        // Largest v satisfying v <= max - minRangeGap(v), i.e.
-        // v <= max - (v + RANGE_MIN_SPAN) solved for v.
-        var cap = Math.floor((state.rangeMax - RANGE_MIN_SPAN) / 2);
-        if (v > cap) v = cap;
+        // Absolute ceiling regardless of the current max handle: pushing
+        // max any higher than this would exceed the slider's own bound.
+        var absCap = Math.floor((rangeAbs.max - RANGE_MIN_SPAN) / 2);
+        if (v > absCap) v = absCap;
         if (v < rangeAbs.min) v = rangeAbs.min;
         e.target.value = v;
         state.rangeMin = v;
         minValueEl.textContent = String(v);
+
+        var neededMax = v + minRangeGap(v);
+        if (neededMax > state.rangeMax) {
+          state.rangeMax = neededMax;
+          maxSlider.value = neededMax;
+          maxValueEl.textContent = String(neededMax);
+        }
       },
       onChange: function () {
         Storage.setRangeMin(state.rangeMin);
+        Storage.setRangeMax(state.rangeMax);
         render();
       }
     });
@@ -687,14 +700,25 @@ var MagicMathApp = (function () {
       type: 'range', class: 'range-slider', min: rangeAbs.min, max: rangeAbs.max, step: 1, value: state.rangeMax,
       onInput: function (e) {
         var v = parseInt(e.target.value, 10);
-        var floor = state.rangeMin + minRangeGap(state.rangeMin);
-        if (v < floor) v = floor;
+        // Absolute floor regardless of the current min handle: pulling
+        // min any lower than this would exceed the slider's own bound.
+        var absFloor = rangeAbs.min + minRangeGap(rangeAbs.min);
+        if (v < absFloor) v = absFloor;
         if (v > rangeAbs.max) v = rangeAbs.max;
         e.target.value = v;
         state.rangeMax = v;
         maxValueEl.textContent = String(v);
+
+        var allowedMin = Math.floor((v - RANGE_MIN_SPAN) / 2);
+        if (state.rangeMin > allowedMin) {
+          var newMin = Math.max(rangeAbs.min, allowedMin);
+          state.rangeMin = newMin;
+          minSlider.value = newMin;
+          minValueEl.textContent = String(newMin);
+        }
       },
       onChange: function () {
+        Storage.setRangeMin(state.rangeMin);
         Storage.setRangeMax(state.rangeMax);
         render();
       }
