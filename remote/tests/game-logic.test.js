@@ -25,7 +25,7 @@ function test(name, fn) {
 // by monkey-patching currentExercise is unnecessary — submitAnswer just
 // compares to exercise.answer, so we read it back each time.
 function makeSession() {
-  return new GameSession(['add'], 10, 10);
+  return new GameSession(['add'], 1, 10, 10);
 }
 
 function answer(session, correct) {
@@ -142,19 +142,57 @@ test('firstAttemptCorrectCount only counts questions solved on the first try', f
 
 console.log('Questions generator');
 
-test('generated exercises respect range/operation constraints (1000 samples)', function () {
-  var ranges = [10, 20, 50, 100];
+// The two SHOWN numbers (a, and b except for multiplication's free second
+// factor — see buildExercise) stay within [min, max]; the answer is only
+// checked against >= 1 and <= max, since e.g. "31 - 28 = 3" is a valid
+// exercise whose answer legitimately falls outside [min, max].
+function assertWithinScale(ex, min, max) {
+  assert.ok(ex.answer >= 1 && ex.answer <= max, 'answer >= 1 and <= max: ' + JSON.stringify(ex) + ' range ' + [min, max]);
+  assert.ok(ex.a >= min && ex.a <= max, 'a within [min,max]: ' + JSON.stringify(ex) + ' range ' + [min, max]);
+  if (ex.op !== 'mul') {
+    assert.ok(ex.b >= min && ex.b <= max, 'b within [min,max]: ' + JSON.stringify(ex) + ' range ' + [min, max]);
+  } else {
+    assert.ok(ex.b >= 1, 'mul second factor is a positive integer: ' + JSON.stringify(ex));
+  }
+  if (ex.op === 'sub') assert.ok(ex.a > ex.b, 'subtraction a>b (no zero/negative answer): ' + JSON.stringify(ex));
+  if (ex.op === 'div') assert.strictEqual(ex.a % ex.b, 0, 'division no remainder: ' + JSON.stringify(ex));
+}
+
+test('generated exercises respect min/max bounds (1000 samples, preset-style ranges)', function () {
+  var ranges = [[1, 10], [1, 20], [1, 50], [1, 100]];
   var ops = ['add', 'sub', 'mul', 'div'];
   for (var i = 0; i < 1000; i++) {
-    var range = ranges[i % ranges.length];
+    var r = ranges[i % ranges.length];
     var op = ops[i % ops.length];
-    var exercises = Questions.generateGame([op], range, 5);
-    exercises.forEach(function (ex) {
-      assert.ok(ex.answer >= 1 && ex.answer <= range, 'answer within range, excluding zero: ' + JSON.stringify(ex));
-      assert.ok(ex.a >= 1 && ex.b >= 1, 'operands exclude zero: ' + JSON.stringify(ex));
-      if (ex.op === 'sub') assert.ok(ex.a > ex.b, 'subtraction a>b (no zero answer): ' + JSON.stringify(ex));
-      if (ex.op === 'div') assert.strictEqual(ex.a % ex.b, 0, 'division no remainder: ' + JSON.stringify(ex));
-    });
+    var exercises = Questions.generateGame([op], r[0], r[1], 5);
+    exercises.forEach(function (ex) { assertWithinScale(ex, r[0], r[1]); });
+  }
+});
+
+// The exact custom scale mentioned by the user (a min above 1, unlike
+// every preset above) — confirms buildExercise/isValid generalize
+// correctly beyond the "starts at 1" case.
+test('generated exercises respect a custom min-max scale (3 to 31, 500 samples)', function () {
+  var ops = ['add', 'sub', 'mul', 'div'];
+  for (var i = 0; i < 500; i++) {
+    var op = ops[i % ops.length];
+    var exercises = Questions.generateGame([op], 3, 31, 5);
+    exercises.forEach(function (ex) { assertWithinScale(ex, 3, 31); });
+  }
+});
+
+// A narrow, high-value scale (min=50) — exactly the shape that broke an
+// earlier version of buildExercise, where mul/div's internal safety
+// clamps incorrectly forced values up to `min`, producing exercises far
+// outside the selected scale (e.g. a 2500 product for max=100). The UI's
+// minRangeGap rule guarantees max >= 2*min for any range it lets a player
+// pick, so that's the scale exercised here.
+test('generated exercises respect a narrow high-value scale (50 to 100, 500 samples)', function () {
+  var ops = ['add', 'sub', 'mul', 'div'];
+  for (var i = 0; i < 500; i++) {
+    var op = ops[i % ops.length];
+    var exercises = Questions.generateGame([op], 50, 100, 5);
+    exercises.forEach(function (ex) { assertWithinScale(ex, 50, 100); });
   }
 });
 

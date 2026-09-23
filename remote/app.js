@@ -35,40 +35,56 @@ var MagicMathCore = (function () {
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  function divisorsOf(range) {
+  function divisorsOf(min, max) {
     var list = [];
-    for (var i = 2; i <= range; i++) {
+    for (var i = Math.max(2, min); i <= max; i++) {
       list.push(i);
     }
     return list;
   }
 
-  // Builds one exercise for the given operation, respecting:
-  //  - no zero operands or answers (everything starts from 1)
-  //  - subtraction: a > b
-  //  - division: whole-number result, no remainder
-  //  - final answer stays within [1, range]
-  function buildExercise(op, range) {
+  // Builds one exercise for the given operation. The two numbers SHOWN in
+  // the problem stay within [min, max] (both, for add/sub, and — for
+  // division — the divisor, with the dividend following automatically).
+  // The ANSWER itself is deliberately not forced into that same window:
+  // "31 - 28 = 3" or "50 / 50 = 1" are perfectly valid exercises whose
+  // shown numbers respect the chosen scale even though the result doesn't.
+  // Forcing the answer into [min, max] too would make many scales
+  // mathematically unsolvable (e.g. two numbers >= 50 always add up to
+  // >= 100, so "add, 50 to 60" would have no valid exercise at all).
+  //
+  // Multiplication is the one asymmetric case: keeping BOTH factors >= min
+  // has the same impossibility problem (two numbers >= 50 always multiply
+  // to >= 2500), so only the first factor respects min — the second
+  // shrinks as needed (down to 1) to keep the product <= max.
+  function buildExercise(op, min, max) {
     var a, b, answer;
 
     if (op === 'add') {
-      a = randInt(1, range);
-      b = randInt(1, Math.max(1, range - a));
+      // `a` is drawn only from [min, max-min] (not the full [min, max]),
+      // which — whenever max >= 2*min — guarantees max-a >= min, so `b`
+      // below always has genuine room to vary rather than usually getting
+      // clamped up to `min` and blowing the sum past max. That clamping
+      // used to make addition pass validation only for the single exact
+      // combination a=b=min when max was just barely >= 2*min, which the
+      // retry loop below could easily fail to land on within its budget.
+      a = randInt(min, Math.max(min, max - min));
+      b = randInt(min, Math.max(min, max - a));
       answer = a + b;
     } else if (op === 'sub') {
-      a = randInt(1, range);
-      b = randInt(1, Math.max(1, a - 1));
+      a = randInt(min, max);
+      b = randInt(min, Math.max(min, a - 1));
       answer = a - b;
     } else if (op === 'mul') {
-      var maxFactor = Math.max(1, Math.floor(Math.sqrt(range)));
-      a = randInt(1, Math.max(1, Math.min(range, maxFactor + 2)));
-      var maxB = Math.max(1, Math.floor(range / a));
+      var maxFactor = Math.max(1, Math.floor(Math.sqrt(max)));
+      a = randInt(min, Math.max(min, Math.min(max, maxFactor + 2)));
+      var maxB = Math.max(1, Math.floor(max / a));
       b = randInt(1, maxB);
       answer = a * b;
     } else if (op === 'div') {
-      var divisors = divisorsOf(range);
-      b = pickRandom(divisors.length ? divisors : [1]);
-      var maxQuotient = Math.max(1, Math.floor(range / b));
+      var divisors = divisorsOf(min, max);
+      b = pickRandom(divisors.length ? divisors : [Math.max(2, min)]);
+      var maxQuotient = Math.max(1, Math.floor(max / b));
       var quotient = randInt(1, maxQuotient);
       a = b * quotient;
       answer = quotient;
@@ -77,8 +93,11 @@ var MagicMathCore = (function () {
     return { a: a, op: op, b: b, answer: answer };
   }
 
-  function isValid(ex, range) {
-    if (ex.a < 1 || ex.b < 1 || ex.answer < 1 || ex.answer > range) {
+  function isValid(ex, min, max) {
+    if (ex.answer < 1 || ex.answer > max || ex.a < min || ex.a > max) {
+      return false;
+    }
+    if (ex.op !== 'mul' && (ex.b < min || ex.b > max)) {
       return false;
     }
     if (ex.op === 'div' && ex.a % ex.b !== 0) {
@@ -97,7 +116,7 @@ var MagicMathCore = (function () {
   // Generates `count` exercises, one selected operation per exercise
   // (chosen randomly from `operations`), avoiding duplicates within the
   // set whenever practical.
-  function generateGame(operations, range, count) {
+  function generateGame(operations, min, max, count) {
     var exercises = [];
     var used = {};
     var maxAttemptsPerExercise = 60;
@@ -106,8 +125,8 @@ var MagicMathCore = (function () {
       var exercise = null;
       for (var attempt = 0; attempt < maxAttemptsPerExercise; attempt++) {
         var op = pickRandom(operations);
-        var candidate = buildExercise(op, range);
-        if (!isValid(candidate, range)) {
+        var candidate = buildExercise(op, min, max);
+        if (!isValid(candidate, min, max)) {
           continue;
         }
         var sig = signature(candidate);
@@ -119,11 +138,12 @@ var MagicMathCore = (function () {
         break;
       }
       if (!exercise) {
-        // Extremely constrained ranges (e.g. 0-10 with only division) may
-        // legitimately run out of unique combinations — fall back to any
-        // valid exercise rather than breaking the game.
+        // Extremely constrained ranges (e.g. a very narrow min-max span
+        // with only division) may legitimately run out of unique
+        // combinations — fall back to any valid exercise rather than
+        // breaking the game.
         var op2 = pickRandom(operations);
-        exercise = buildExercise(op2, range);
+        exercise = buildExercise(op2, min, max);
       }
       exercises.push(exercise);
     }
@@ -138,11 +158,12 @@ var MagicMathCore = (function () {
   var MILESTONES = [3, 6, 9];
   var TOTAL_QUESTIONS = 10;
 
-  function GameSession(operations, range, totalQuestions) {
+  function GameSession(operations, min, max, totalQuestions) {
     this.operations = operations;
-    this.range = range;
+    this.min = min;
+    this.max = max;
     this.totalQuestions = totalQuestions || TOTAL_QUESTIONS;
-    this.exercises = Questions.generateGame(operations, range, this.totalQuestions);
+    this.exercises = Questions.generateGame(operations, min, max, this.totalQuestions);
     this.currentIndex = 0;
     this.score = 0;
     this.correctStreak = 0;
@@ -277,8 +298,10 @@ var MagicMathApp = (function () {
     return {
       getCharacter: function () { return get('character'); },
       setCharacter: function (id) { set('character', id); },
-      getRange: function () { var v = get('range'); return v ? parseInt(v, 10) : null; },
-      setRange: function (r) { set('range', String(r)); },
+      getRangeMin: function () { var v = get('rangeMin'); return v ? parseInt(v, 10) : null; },
+      setRangeMin: function (r) { set('rangeMin', String(r)); },
+      getRangeMax: function () { var v = get('rangeMax'); return v ? parseInt(v, 10) : null; },
+      setRangeMax: function (r) { set('rangeMax', String(r)); },
       getOperations: function () {
         var v = get('operations');
         if (!v) return null;
@@ -436,6 +459,17 @@ var MagicMathApp = (function () {
   var SCREEN = { WELCOME: 'welcome', SETTINGS: 'settings', GAME: 'game', RESULTS: 'results' };
   var TOTAL_QUESTIONS = GameSession.TOTAL_QUESTIONS;
 
+  // Smallest allowed gap between the range slider's min and max handles.
+  // Addition needs max >= 2*min (the smallest possible sum of two numbers
+  // >= min is min+min) — every other operation is feasible for any
+  // min < max (see buildExercise). max == 2*min exactly is technically
+  // solvable but only via the single combination a=b=min, which the
+  // random generator/retry loop will often miss within its attempt
+  // budget — so RANGE_MIN_SPAN is added on top of 2*min as headroom,
+  // giving a real (not single-point) pool of valid combinations.
+  var RANGE_MIN_SPAN = 4;
+  function minRangeGap(min) { return min + RANGE_MIN_SPAN; }
+
   var root = null;
   var remoteBase = '';
   var version = '';
@@ -445,12 +479,28 @@ var MagicMathApp = (function () {
     screen: SCREEN.WELCOME, // every fresh init() always starts here — never skipped
     selectedCharacterId: null,
     characterManifest: null,
-    range: null,
+    rangeMin: null,
+    rangeMax: null,
     operations: [],
     session: null,
     exitModalOpen: false,
     charactersLoading: false
   };
+
+  // Loads a saved min/max from storage, or falls back to config defaults,
+  // whenever either bound isn't already set on state (or a stored pair
+  // predates/violates the minRangeGap rule, e.g. edited by hand).
+  function ensureRangeInitialized() {
+    if (state.rangeMin == null) state.rangeMin = Storage.getRangeMin();
+    if (state.rangeMax == null) state.rangeMax = Storage.getRangeMax();
+    var valid = state.rangeMin != null && state.rangeMax != null &&
+      state.rangeMax >= state.rangeMin + minRangeGap(state.rangeMin);
+    if (!valid) {
+      var d = config.numberRange || {};
+      state.rangeMin = d.defaultMin != null ? d.defaultMin : 1;
+      state.rangeMax = d.defaultMax != null ? d.defaultMax : 10;
+    }
+  }
 
   function assetUrl(id, rel) {
     return remoteBase + 'characters/' + id + '/' + rel + '?v=' + encodeURIComponent(version);
@@ -579,7 +629,7 @@ var MagicMathApp = (function () {
       })
       .then(function () {
         state.charactersLoading = false;
-        state.range = state.range || Storage.getRange();
+        ensureRangeInitialized();
         state.operations = (state.operations && state.operations.length) ? state.operations : (Storage.getOperations() || []);
         state.screen = SCREEN.SETTINGS;
         render();
@@ -604,20 +654,64 @@ var MagicMathApp = (function () {
 
     var heading = h('h2', { class: 'section-title', text: 'מה נתרגל היום?' });
 
-    var rangeGrid = h('div', { class: 'choice-grid' });
-    config.numberRanges.forEach(function (range) {
-      var btn = h('button', {
-        type: 'button',
-        class: 'choice-btn' + (state.range === range ? ' is-selected' : ''),
-        text: 'עד ' + range,
-        onClick: function () {
-          state.range = range;
-          Storage.setRange(range);
-          render();
-        }
-      });
-      rangeGrid.appendChild(btn);
+    // Dual-slider "practice between X and Y" picker, replacing a fixed
+    // set of "up to N" presets. The two handles can't collapse onto (or
+    // past) each other — see minRangeGap for why the required gap grows
+    // with min itself (addition needs max >= 2*min to have any solution).
+    var rangeAbs = config.numberRange || { min: 1, max: 100 };
+
+    var minValueEl = h('span', { class: 'range-value', text: String(state.rangeMin) });
+    var maxValueEl = h('span', { class: 'range-value', text: String(state.rangeMax) });
+    var minSlider, maxSlider;
+
+    minSlider = h('input', {
+      type: 'range', class: 'range-slider', min: rangeAbs.min, max: rangeAbs.max, step: 1, value: state.rangeMin,
+      onInput: function (e) {
+        var v = parseInt(e.target.value, 10);
+        // Largest v satisfying v <= max - minRangeGap(v), i.e.
+        // v <= max - (v + RANGE_MIN_SPAN) solved for v.
+        var cap = Math.floor((state.rangeMax - RANGE_MIN_SPAN) / 2);
+        if (v > cap) v = cap;
+        if (v < rangeAbs.min) v = rangeAbs.min;
+        e.target.value = v;
+        state.rangeMin = v;
+        minValueEl.textContent = String(v);
+      },
+      onChange: function () {
+        Storage.setRangeMin(state.rangeMin);
+        render();
+      }
     });
+
+    maxSlider = h('input', {
+      type: 'range', class: 'range-slider', min: rangeAbs.min, max: rangeAbs.max, step: 1, value: state.rangeMax,
+      onInput: function (e) {
+        var v = parseInt(e.target.value, 10);
+        var floor = state.rangeMin + minRangeGap(state.rangeMin);
+        if (v < floor) v = floor;
+        if (v > rangeAbs.max) v = rangeAbs.max;
+        e.target.value = v;
+        state.rangeMax = v;
+        maxValueEl.textContent = String(v);
+      },
+      onChange: function () {
+        Storage.setRangeMax(state.rangeMax);
+        render();
+      }
+    });
+
+    var rangeGrid = h('div', { class: 'range-picker' }, [
+      h('div', { class: 'range-row' }, [
+        h('span', { class: 'range-row-label', text: 'מ' }),
+        minSlider,
+        minValueEl
+      ]),
+      h('div', { class: 'range-row' }, [
+        h('span', { class: 'range-row-label', text: 'עד' }),
+        maxSlider,
+        maxValueEl
+      ])
+    ]);
 
     var opsHeading = h('h2', { class: 'section-title', text: 'אילו תרגילים?' });
     var opsGrid = h('div', { class: 'choice-grid' });
@@ -641,7 +735,7 @@ var MagicMathApp = (function () {
       opsGrid.appendChild(btn);
     });
 
-    var canStart = !!state.range && state.operations.length > 0;
+    var canStart = state.rangeMin != null && state.rangeMax != null && state.operations.length > 0;
     var startButton = h('button', {
       type: 'button',
       class: 'primary-button',
@@ -666,8 +760,8 @@ var MagicMathApp = (function () {
   }
 
   function onStartGameClick() {
-    if (!state.range || !state.operations.length) return;
-    state.session = new GameSession(state.operations.slice(), state.range, TOTAL_QUESTIONS);
+    if (state.rangeMin == null || state.rangeMax == null || !state.operations.length) return;
+    state.session = new GameSession(state.operations.slice(), state.rangeMin, state.rangeMax, TOTAL_QUESTIONS);
     gameUiState.inputValue = '';
     gameUiState.busy = false;
     gameUiState.bgOverride = null;
@@ -932,7 +1026,7 @@ var MagicMathApp = (function () {
   }
 
   function onPlayAgainClick() {
-    state.session = new GameSession(state.operations.slice(), state.range, TOTAL_QUESTIONS);
+    state.session = new GameSession(state.operations.slice(), state.rangeMin, state.rangeMax, TOTAL_QUESTIONS);
     gameUiState.inputValue = '';
     gameUiState.busy = false;
     gameUiState.bgOverride = null;
@@ -958,7 +1052,9 @@ var MagicMathApp = (function () {
     state.characterManifest = null;
     state.session = null;
     state.exitModalOpen = false;
-    state.range = Storage.getRange();
+    state.rangeMin = null;
+    state.rangeMax = null;
+    ensureRangeInitialized();
     state.operations = Storage.getOperations() || [];
 
     render();
