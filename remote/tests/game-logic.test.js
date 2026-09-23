@@ -150,8 +150,9 @@ test('generated exercises respect range/operation constraints (1000 samples)', f
     var op = ops[i % ops.length];
     var exercises = Questions.generateGame([op], range, 5);
     exercises.forEach(function (ex) {
-      assert.ok(ex.answer >= 0 && ex.answer <= range, 'answer within range: ' + JSON.stringify(ex));
-      if (ex.op === 'sub') assert.ok(ex.a >= ex.b, 'subtraction a>=b: ' + JSON.stringify(ex));
+      assert.ok(ex.answer >= 1 && ex.answer <= range, 'answer within range, excluding zero: ' + JSON.stringify(ex));
+      assert.ok(ex.a >= 1 && ex.b >= 1, 'operands exclude zero: ' + JSON.stringify(ex));
+      if (ex.op === 'sub') assert.ok(ex.a > ex.b, 'subtraction a>b (no zero answer): ' + JSON.stringify(ex));
       if (ex.op === 'div') assert.strictEqual(ex.a % ex.b, 0, 'division no remainder: ' + JSON.stringify(ex));
     });
   }

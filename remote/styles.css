@@ -227,7 +227,7 @@ button { font-family: inherit; cursor: pointer; }
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   z-index: 0;
 }
 
@@ -306,7 +306,10 @@ button { font-family: inherit; cursor: pointer; }
 
 .exercise { text-align: center; font-size: clamp(32px, 9vw, 46px); font-weight: 900; letter-spacing: 2px; color: var(--glass-text); direction: ltr; }
 
-.keypad { width: 100%; max-width: 420px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+/* Digits always read left-to-right like a normal keypad, even though the
+   page itself is RTL (same reasoning as .exercise above) — otherwise grid
+   auto-placement in an RTL document lays 1-9 out right-to-left. */
+.keypad { width: 100%; max-width: 420px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; direction: ltr; }
 
 .key {
   border: none; border-radius: var(--radius-md);
@@ -356,4 +359,10 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 360px) {
   .exercise { font-size: clamp(26px, 10vw, 38px); }
   .key { min-height: 50px; font-size: 20px; }
+}
+
+/* Wider viewports have room to spread the keypad into 4 columns instead
+   of 3, trading one row for a wider layout (12 keys: 3 rows instead of 4). */
+@media (min-width: 480px) {
+  .keypad { max-width: 560px; grid-template-columns: repeat(4, 1fr); }
 }

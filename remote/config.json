@@ -37,6 +37,16 @@
       "id": "race-car",
       "name": "מכונית מירוץ",
       "theme": { "from": "#fff4dd", "to": "#ffd9d0", "accent": "#ff5a3c", "dark": false }
+    },
+    {
+      "id": "dinosaur",
+      "name": "דינוזאור",
+      "theme": { "from": "#eafbe8", "to": "#d7f0d0", "accent": "#4c9b5a", "dark": false }
+    },
+    {
+      "id": "robot",
+      "name": "רובוט",
+      "theme": { "from": "#eaf3ff", "to": "#dfe6f5", "accent": "#5c7cad", "dark": false }
     }
   ]
 }

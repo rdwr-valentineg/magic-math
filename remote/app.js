@@ -44,20 +44,20 @@ var MagicMathCore = (function () {
   }
 
   // Builds one exercise for the given operation, respecting:
-  //  - no negative answers
-  //  - subtraction: a >= b
+  //  - no zero operands or answers (everything starts from 1)
+  //  - subtraction: a > b
   //  - division: whole-number result, no remainder
-  //  - final answer stays within [0, range]
+  //  - final answer stays within [1, range]
   function buildExercise(op, range) {
     var a, b, answer;
 
     if (op === 'add') {
-      a = randInt(0, range);
-      b = randInt(0, range - a);
+      a = randInt(1, range);
+      b = randInt(1, Math.max(1, range - a));
       answer = a + b;
     } else if (op === 'sub') {
-      a = randInt(0, range);
-      b = randInt(0, a);
+      a = randInt(1, range);
+      b = randInt(1, Math.max(1, a - 1));
       answer = a - b;
     } else if (op === 'mul') {
       var maxFactor = Math.max(1, Math.floor(Math.sqrt(range)));
@@ -78,13 +78,13 @@ var MagicMathCore = (function () {
   }
 
   function isValid(ex, range) {
-    if (ex.answer < 0 || ex.answer > range) {
+    if (ex.a < 1 || ex.b < 1 || ex.answer < 1 || ex.answer > range) {
       return false;
     }
-    if (ex.op === 'div' && (ex.b === 0 || ex.a % ex.b !== 0)) {
+    if (ex.op === 'div' && ex.a % ex.b !== 0) {
       return false;
     }
-    if (ex.op === 'sub' && ex.a < ex.b) {
+    if (ex.op === 'sub' && ex.a <= ex.b) {
       return false;
     }
     return true;
@@ -803,8 +803,10 @@ var MagicMathApp = (function () {
         if (result.finished) {
           goToResults();
         } else {
+          // bgOverride is left as-is (set above): a milestone's celebration
+          // background stays until the next answer's outcome replaces it,
+          // instead of snapping back to the default game background here.
           gameUiState.characterPose = 'idle';
-          gameUiState.bgOverride = null;
           gameUiState.inputValue = '';
           gameUiState.busy = false;
           render();
@@ -818,8 +820,9 @@ var MagicMathApp = (function () {
       showScorePop(String(result.pointsGained), true);
 
       window.setTimeout(function () {
+        // bgOverride stays 'tryAgain' — it only clears once a correct
+        // answer's branch above sets it back to null (or 'celebration').
         gameUiState.characterPose = 'idle';
-        gameUiState.bgOverride = null;
         gameUiState.inputValue = '';
         gameUiState.busy = false;
         render();

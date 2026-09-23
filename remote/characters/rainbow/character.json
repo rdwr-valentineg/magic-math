@@ -49,12 +49,31 @@
     "icons/progress-star.webp"
   ],
   "audio": {
-    "start": [],
-    "correct": [],
-    "wrong": [],
-    "bonus3": [],
-    "bonus6": [],
-    "bonus9": [],
-    "finish": []
+    "start": [
+      "audio/start-01.mp3",
+      "audio/start-02.mp3"
+    ],
+    "correct": [
+      "audio/correct-01.mp3",
+      "audio/correct-02.mp3",
+      "audio/correct-03.mp3"
+    ],
+    "wrong": [
+      "audio/wrong-01.mp3",
+      "audio/wrong-02.mp3"
+    ],
+    "bonus3": [
+      "audio/bonus-03.mp3"
+    ],
+    "bonus6": [
+      "audio/bonus-06.mp3"
+    ],
+    "bonus9": [
+      "audio/bonus-09.mp3"
+    ],
+    "finish": [
+      "audio/finish-01.mp3",
+      "audio/finish-02.mp3"
+    ]
   }
 }
