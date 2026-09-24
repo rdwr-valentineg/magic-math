@@ -150,41 +150,21 @@
     });
   }
 
-  function loadStylesheet(href) {
-    return new Promise(function (resolve, reject) {
-      var el = document.createElement('link');
-      el.rel = 'stylesheet';
-      el.href = href;
-      el.onload = function () { resolve(); };
-      el.onerror = function () { reject(new Error('stylesheet failed to load: ' + href)); };
-      document.head.appendChild(el);
-    });
-  }
-
-  function fetchConfig() {
-    var url = REMOTE_BASE + 'config.json?t=' + Date.now();
-    return fetch(url, { cache: 'no-store' }).then(function (res) {
-      if (!res.ok) throw new Error('config.json responded ' + res.status);
-      return res.json();
-    });
-  }
-
+  // Loading just boot.js (cache-busted by timestamp, since it's fetched
+  // before we know the remote version) and handing off to it is what lets
+  // this launcher stay untouched as the remote platform's own internals
+  // evolve — boot.js owns fetching config.json and loading everything else
+  // it needs, and is the exact same loader remote/index.html itself uses.
   function boot() {
     showLoading();
-    fetchConfig()
-      .then(function (config) {
-        if (!config || !config.version) throw new Error('config.json missing version');
-        var v = encodeURIComponent(config.version);
-        return Promise.all([
-          loadStylesheet(REMOTE_BASE + 'styles.css?v=' + v),
-          loadScript(REMOTE_BASE + 'app.js?v=' + v)
-        ]).then(function () { return config; });
-      })
-      .then(function (config) {
-        if (!window.MagicMathApp || typeof window.MagicMathApp.init !== 'function') {
-          throw new Error('remote app.js did not register MagicMathApp.init');
+    loadScript(REMOTE_BASE + 'boot.js?t=' + Date.now())
+      .then(function () {
+        if (!window.PlatformBoot || typeof window.PlatformBoot.start !== 'function') {
+          throw new Error('remote boot.js did not register PlatformBoot.start');
         }
-        window.MagicMathApp.init({ root: rootEl, remoteBase: REMOTE_BASE, config: config });
+        return window.PlatformBoot.start(REMOTE_BASE, rootEl);
+      })
+      .then(function () {
         hideShell();
       })
       .catch(function (err) {
