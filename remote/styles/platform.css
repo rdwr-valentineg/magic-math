@@ -445,3 +445,178 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 360px) {
   .exercise { font-size: clamp(26px, 10vw, 38px); }
 }
+
+/* ---------------- shared: pill tabs (session mode / activity pickers) ---------------- */
+
+.pill-tabs { display: flex; gap: 8px; width: 100%; max-width: 480px; margin: 0 auto; }
+.pill-tab {
+  flex: 1;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 12px 8px;
+  box-shadow: 0 6px 14px rgba(30, 15, 70, 0.16);
+}
+.pill-tab.is-selected { border-color: var(--theme-accent); background: var(--card-bg-soft); }
+.pill-tab:active { transform: scale(0.96); }
+
+/* ---------------- Session settings picker ---------------- */
+
+.session-picker {
+  display: flex; flex-direction: column; gap: 10px;
+  width: 100%; max-width: 480px; margin: 6px auto 4px;
+}
+.session-picker-heading { color: #fff; font-size: 15px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); text-align: center; }
+
+.session-preset-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.session-preset-btn {
+  border: 3px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 10px 16px;
+  min-width: 60px;
+  box-shadow: 0 6px 14px rgba(30, 15, 70, 0.16);
+  direction: ltr;
+}
+.session-preset-btn.is-selected { border-color: var(--theme-accent); background: var(--card-bg-soft); }
+.session-preset-btn:active { transform: scale(0.95); }
+
+.session-custom-row {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(255,255,255,0.16); border-radius: var(--radius-md); padding: 10px 14px;
+}
+.session-custom-label { color: #fff; font-size: 14px; font-weight: 600; }
+
+/* ---------------- shared: numeric input fields ---------------- */
+
+.session-custom-input, .range-number-input {
+  width: 72px;
+  border: none;
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 8px 6px;
+  text-align: center;
+  direction: ltr;
+}
+
+.range-field-row { display: flex; gap: 16px; justify-content: center; }
+.range-field { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--text-main); }
+
+.settings-hint {
+  color: rgba(255,255,255,0.92);
+  font-size: 13px;
+  text-align: center;
+  max-width: 420px;
+  margin: -4px auto 4px;
+  padding: 0 8px;
+}
+
+/* ---------------- Session progress bar ---------------- */
+
+.session-progress {
+  width: 100%; max-width: 320px; height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.35);
+  margin-top: 10px;
+  overflow: hidden;
+}
+.session-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--correct), #2fbf71);
+  transition: width 0.4s ease;
+}
+
+/* ---------------- shared: large tap-choice buttons (letters/numbers) ---------------- */
+
+.game-character-wrap--small { min-height: 90px; }
+
+.tap-choice-grid {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+  width: 100%; max-width: 420px; margin: 6px 0;
+}
+.tap-choice-btn {
+  flex: 1 1 90px;
+  min-height: 76px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg); color: var(--glass-text);
+  font-size: 30px; font-weight: 900;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.tap-choice-btn:active { transform: scale(0.94); }
+.tap-choice-btn--number { direction: ltr; }
+
+/* ---------------- Letters: First Letter activity ---------------- */
+
+.letter-word-card {
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 100%; max-width: 300px;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+  margin: 4px 0 10px;
+}
+.letter-illustration { font-size: 64px; line-height: 1; }
+.letter-illustration-img { width: 96px; height: 96px; object-fit: contain; }
+.letter-word-text { font-size: 20px; font-weight: 800; color: var(--glass-text); }
+
+/* ---------------- Numbers: shared activity body ---------------- */
+
+.numbers-activity-body { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+
+.quantity-card {
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  width: 100%; max-width: 340px;
+  min-height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+}
+
+.quantity-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; max-width: 300px; }
+.quantity-item { line-height: 1; display: inline-block; }
+.quantity-item-img { object-fit: contain; }
+
+.quantity-empty {
+  width: 76px; height: 76px;
+  border: 3px dashed rgba(120, 100, 160, 0.4);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+}
+.quantity-empty-ghost { font-size: 32px; opacity: 0.22; filter: grayscale(1); }
+
+/* ---------------- Numbers: Number to Quantity activity ---------------- */
+
+.match-target-badge {
+  background: var(--glass-bg); color: var(--glass-text);
+  font-size: 40px; font-weight: 900;
+  border-radius: var(--radius-lg);
+  padding: 8px 28px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+  direction: ltr;
+}
+
+.match-groups-row { display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 440px; }
+.match-group-btn {
+  flex: 1;
+  min-height: 96px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px 6px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.match-group-btn:active { transform: scale(0.95); }
