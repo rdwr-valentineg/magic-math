@@ -1,0 +1,69 @@
+{
+  "id": "kitten",
+  "character": {
+    "select": "character/select.webp",
+    "idle": "character/idle.webp",
+    "happy": "character/happy.webp",
+    "tryAgain": "character/try-again.webp",
+    "celebration": "character/celebration.webp"
+  },
+  "backgrounds": {
+    "game": "backgrounds/game.webp",
+    "celebration": "backgrounds/celebration.webp",
+    "tryAgain": "backgrounds/try-again.webp",
+    "distant": "backgrounds/distant.webp"
+  },
+  "environment": [
+    "environment/bench.webp",
+    "environment/fence-wall.webp",
+    "environment/flower-arch.webp",
+    "environment/flower-pot-01.webp",
+    "environment/flower-pot-02.webp",
+    "environment/lamp-post.webp",
+    "environment/signpost.webp",
+    "environment/stone-planter.webp"
+  ],
+  "decorations": [
+    "decorations/butterfly.webp",
+    "decorations/collar.webp",
+    "decorations/fishbowl.webp",
+    "decorations/flower-pot.webp",
+    "decorations/heart.webp",
+    "decorations/leaf.webp",
+    "decorations/yarn-ball.webp"
+  ],
+  "icons": [
+    "icons/bonus-bow.webp",
+    "icons/bonus-fish.webp",
+    "icons/bonus-leaf-sprig.webp",
+    "icons/bonus-medal.webp",
+    "icons/progress-gem.webp",
+    "icons/progress-heart.webp",
+    "icons/progress-paw.webp",
+    "icons/progress-star.webp"
+  ],
+  "audio": {
+    "start": [
+      "audio/start-01.mp3",
+      "audio/start-02.mp3"
+    ],
+    "correct": [
+      "audio/correct-01.mp3",
+      "audio/correct-02.mp3",
+      "audio/correct-03.mp3"
+    ],
+    "wrong": [
+      "audio/wrong-01.mp3",
+      "audio/wrong-02.mp3"
+    ],
+    "streak": [
+      "audio/bonus-03.mp3",
+      "audio/bonus-06.mp3",
+      "audio/bonus-09.mp3"
+    ],
+    "finish": [
+      "audio/finish-01.mp3",
+      "audio/finish-02.mp3"
+    ]
+  }
+}

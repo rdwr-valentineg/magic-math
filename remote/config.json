@@ -1,11 +1,9 @@
 {
-  "version": "1.1.0",
-  "numberRange": { "min": 1, "max": 100, "defaultMin": 1, "defaultMax": 10 },
-  "operations": [
-    { "id": "add", "symbol": "+" },
-    { "id": "sub", "symbol": "−" },
-    { "id": "mul", "symbol": "×" },
-    { "id": "div", "symbol": "÷" }
+  "version": "2.0.0",
+  "games": [
+    { "id": "math", "name": "חשבון", "icon": "assets/global/icons/game-math.svg", "enabled": true },
+    { "id": "letters", "name": "אותיות", "icon": "assets/global/icons/game-letters.svg", "enabled": false },
+    { "id": "numbers", "name": "מספרים", "icon": "assets/global/icons/game-numbers.svg", "enabled": false }
   ],
   "characters": [
     {

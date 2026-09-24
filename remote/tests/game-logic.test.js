@@ -2,14 +2,15 @@
  * Plain Node test for MagicMathCore.GameSession — no dependencies, no
  * framework. Run with: node remote/tests/game-logic.test.js
  *
- * Focus: the streak/bonus rules explicitly called out as a critical bug
- * fix — bonuses must trigger on CONSECUTIVE correct answers only, and a
- * wrong answer must reset the streak immediately.
+ * Focus: the streak/bonus rules — a streak event fires whenever the
+ * consecutive-correct count becomes a multiple of a configurable
+ * `threshold` (generalizing the old fixed 3/6/9 milestones), and a wrong
+ * answer must reset the streak immediately.
  */
 
 var assert = require('assert');
 var path = require('path');
-var MagicMathCore = require(path.join(__dirname, '..', 'app.js'));
+var MagicMathCore = require(path.join(__dirname, '..', 'js', 'core', 'math-core.js'));
 var GameSession = MagicMathCore.GameSession;
 var Questions = MagicMathCore.Questions;
 
@@ -24,8 +25,8 @@ function test(name, fn) {
 // scenarios deterministic: force every exercise's answer to a known value
 // by monkey-patching currentExercise is unnecessary — submitAnswer just
 // compares to exercise.answer, so we read it back each time.
-function makeSession() {
-  return new GameSession(['add'], 1, 10, 10);
+function makeSession(options) {
+  return new GameSession(['add'], 1, 10, 10, options);
 }
 
 function answer(session, correct) {
@@ -36,7 +37,7 @@ function answer(session, correct) {
 
 console.log('GameSession streak/bonus rules');
 
-test('correct answer scores +2 and increments streak', function () {
+test('correct answer scores +2 and increments streak (default scoring)', function () {
   var s = makeSession();
   var r = answer(s, true);
   assert.strictEqual(r.correct, true);
@@ -65,29 +66,29 @@ test('score never falls below 0', function () {
   assert.strictEqual(s.score, 0);
 });
 
-test('milestone bonus triggers exactly at consecutive streak 3, 6, 9', function () {
+test('streak event fires at every multiple of the configured threshold (default 3)', function () {
   var s = makeSession();
-  var milestonesSeen = [];
+  var streakStreaks = [];
   for (var i = 0; i < 9; i++) {
     var r = answer(s, true);
-    if (r.milestone) milestonesSeen.push(r.milestone);
+    if (r.streakEvent) streakStreaks.push(r.streak);
   }
-  assert.deepStrictEqual(milestonesSeen, [3, 6, 9]);
+  assert.deepStrictEqual(streakStreaks, [3, 6, 9]);
 });
 
-test('milestone bonus adds +2 on top of the normal +2 (total +4 that turn)', function () {
+test('streak bonus adds on top of the normal correct points (default +2 on top of +2)', function () {
   var s = makeSession();
   answer(s, true);
   answer(s, true);
-  var r = answer(s, true); // streak 3 -> milestone
-  assert.strictEqual(r.milestone, 3);
+  var r = answer(s, true); // streak 3 -> streak event
+  assert.strictEqual(r.streakEvent, true);
   assert.strictEqual(r.pointsGained, 4);
 });
 
-// The exact scenario from the spec:
-//   Correct, Correct, Wrong, Correct, Correct, Correct
-// The final correct answer is streak 3 (the wrong reset the streak to 0
-// right before it). It must NOT be treated as cumulative streak 5.
+// Consecutive-streak semantics: Correct, Correct, Wrong, Correct, Correct,
+// Correct. The final correct answer is streak 3 (the wrong reset the
+// streak to 0 right before it) — it must NOT be treated as cumulative
+// streak 5.
 test('spec scenario: correct,correct,wrong,correct,correct,correct -> final streak is 3, not 5', function () {
   var s = makeSession();
   var results = [
@@ -96,7 +97,7 @@ test('spec scenario: correct,correct,wrong,correct,correct,correct -> final stre
     answer(s, false), // wrong -> streak 0
     answer(s, true),  // streak 1
     answer(s, true),  // streak 2
-    answer(s, true)   // streak 3 -> milestone
+    answer(s, true)   // streak 3 -> streak event
   ];
 
   assert.strictEqual(results[0].streak, 1);
@@ -106,11 +107,25 @@ test('spec scenario: correct,correct,wrong,correct,correct,correct -> final stre
   assert.strictEqual(results[4].streak, 2);
   assert.strictEqual(results[5].streak, 3);
 
-  assert.strictEqual(results[5].milestone, 3);
+  assert.strictEqual(results[5].streakEvent, true);
   assert.notStrictEqual(results[5].streak, 5);
 
-  var milestonesFired = results.filter(function (r) { return r.milestone; }).map(function (r) { return r.milestone; });
-  assert.deepStrictEqual(milestonesFired, [3]);
+  var streakCount = results.filter(function (r) { return r.streakEvent; }).length;
+  assert.strictEqual(streakCount, 1);
+});
+
+test('streak threshold/bonus/scoring are fully configurable', function () {
+  var s = makeSession({ scoring: { correct: 5, wrong: -3 }, streak: { threshold: 2, bonus: 10 } });
+  var r1 = answer(s, true); // streak 1, no event
+  assert.strictEqual(r1.pointsGained, 5);
+  assert.strictEqual(r1.streakEvent, false);
+
+  var r2 = answer(s, true); // streak 2 -> event (threshold 2)
+  assert.strictEqual(r2.streakEvent, true);
+  assert.strictEqual(r2.pointsGained, 15);
+
+  var r3 = answer(s, false);
+  assert.strictEqual(r3.pointsGained, -3);
 });
 
 test('wrong answer keeps the same exercise (no advance) and allows retry', function () {

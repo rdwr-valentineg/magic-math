@@ -1,0 +1,74 @@
+{
+  "id": "race-car",
+  "character": {
+    "select": "character/select.webp",
+    "idle": "character/idle.webp",
+    "happy": "character/happy.webp",
+    "tryAgain": "character/try-again.webp",
+    "celebration": "character/celebration.webp"
+  },
+  "backgrounds": {
+    "game": "backgrounds/game.webp",
+    "celebration": "backgrounds/celebration.webp",
+    "tryAgain": "backgrounds/try-again.webp",
+    "distant": "backgrounds/distant.webp"
+  },
+  "environment": [
+    "environment/flag-left.webp",
+    "environment/flag-right.webp",
+    "environment/stone-bridge.webp",
+    "environment/tunnel.webp"
+  ],
+  "decorations": [
+    "decorations/bush.webp",
+    "decorations/coin.webp",
+    "decorations/fuel-pump.webp",
+    "decorations/traffic-light.webp",
+    "decorations/trophy.webp",
+    "decorations/turn-sign.webp"
+  ],
+  "icons": [
+    "icons/bonus-checkered-flag.webp",
+    "icons/bonus-cone.webp",
+    "icons/bonus-crossed-flags.webp",
+    "icons/bonus-fuel-can.webp",
+    "icons/bonus-lightning.webp",
+    "icons/bonus-speedometer.webp",
+    "icons/bonus-tire.webp",
+    "icons/progress-star.webp"
+  ],
+  "audio": {
+    "start": [
+      "audio/start-01.mp3",
+      "audio/start-02.mp3",
+      "audio/start-03.mp3",
+      "audio/start-04.mp3",
+      "audio/start-05.mp3"
+    ],
+    "correct": [],
+    "wrong": [
+      "audio/wrong-01.mp3",
+      "audio/wrong-02.mp3",
+      "audio/wrong-03.mp3",
+      "audio/wrong-04.mp3",
+      "audio/wrong-05.mp3",
+      "audio/wrong-06.mp3",
+      "audio/wrong-07.mp3"
+    ],
+    "streak": [
+      "audio/streak-01.mp3",
+      "audio/streak-02.mp3",
+      "audio/streak-03.mp3",
+      "audio/streak-04.mp3",
+      "audio/streak-05.mp3"
+    ],
+    "finish": [
+      "audio/finish-01.mp3",
+      "audio/finish-02.mp3",
+      "audio/finish-03.mp3",
+      "audio/finish-04.mp3",
+      "audio/finish-05.mp3",
+      "audio/finish-06.mp3"
+    ]
+  }
+}
