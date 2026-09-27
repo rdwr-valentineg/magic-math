@@ -3,11 +3,11 @@
  * tabs + presets + custom value, Hebrew labels) and a single generic
  * progress-bar renderer shared by every session mode. Any game that wants
  * configurable session length uses this instead of hand-rolling its own
- * question-count/target-score/timer UI (see games/letters/game.js and
- * games/numbers/game.js).
+ * question-count/target-score/timer UI (see games/letters-core/engine.js
+ * and games/numbers/game.js).
  *
  * A game declares which modes it supports + their presets/limits in its own
- * config.js (see games/letters/config.js's `session` object) — this file
+ * config.js (see games/hebrew-letters/config.js's `session` object) — this file
  * has no opinion on that, it only renders whatever modes it's given.
  */
 

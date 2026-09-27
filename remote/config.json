@@ -1,8 +1,9 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "games": [
     { "id": "math", "name": "חשבון", "icon": "assets/global/icons/game-math.svg", "enabled": true },
-    { "id": "letters", "name": "אותיות", "icon": "assets/global/icons/game-letters.svg", "enabled": true },
+    { "id": "hebrew-letters", "name": "אותיות בעברית", "icon": "assets/global/icons/game-hebrew-letters.svg", "enabled": true },
+    { "id": "english-letters", "name": "English Letters", "icon": "assets/global/icons/game-english-letters.svg", "enabled": true },
     { "id": "numbers", "name": "מספרים", "icon": "assets/global/icons/game-numbers.svg", "enabled": true }
   ],
   "characters": [

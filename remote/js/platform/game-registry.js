@@ -7,9 +7,8 @@
  *
  * A game module registers itself into window.Games[id] (from game.js) and
  * its settings/behavior config into window.GameConfigs[id] (from
- * config.js). Disabled games (Letters, Numbers today) ship only a
- * config.js placeholder and are never opened, so game.js is never
- * requested for them.
+ * config.js). A disabled game ships only a config.js placeholder and is
+ * never opened, so game.js is never requested for it.
  */
 
 var GameRegistry = (function () {

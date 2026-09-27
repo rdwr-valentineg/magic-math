@@ -2,7 +2,7 @@
  * Numbers game module — Count the Objects + Number to Quantity activities
  * (spec §14-16). Registers into window.Games.numbers. Session progression
  * is delegated to MagicMathSessionCore.SessionManager + SessionUI, exactly
- * like games/letters/game.js — this file owns only the two activities'
+ * like games/letters-core/engine.js — this file owns only the two activities'
  * question/answer flow, the range picker, and the reusable quantity
  * renderer both activities share.
  */

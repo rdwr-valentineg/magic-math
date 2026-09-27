@@ -46,7 +46,7 @@ window.GameConfigs.numbers = {
   },
 
   // World background layer (spec §13/§28) — same situation documented in
-  // games/letters/config.js: prepared for future Magical Garden artwork,
+  // games/hebrew-letters/config.js: prepared for future Magical Garden artwork,
   // but every shipped character's own backgrounds.game currently wins in
   // ThemeManager's resolution order, so this is inert until either real art
   // is added here or a character omits its own background.

@@ -1,26 +1,28 @@
 /*
- * Letters — centralized, data-driven word/letter content (see spec §9-10).
- * `words` is the "First Letter" activity's whole question pool: one word
- * per base letter today, each mapped to its correct first letter. Every
- * entry already carries the fields future activities will want
- * (pronunciation audio, categories, alternative images, distractor rules)
- * even though only `word`/`firstLetter`/`emoji`/`difficulty` are used yet —
- * adding those later is a data change, not a gameplay-code change.
+ * Hebrew Letters — centralized, data-driven word/letter content (spec
+ * §5/§12). One word per base letter covers all three activities (First
+ * Letter, Entire Word, Letter → Image) — no gameplay code ever hard-codes
+ * a word. Every entry already carries the fields future work will want
+ * (pronunciation audio, categories, alternate images, distractor rules)
+ * even though only word/firstLetter/emoji/difficulty are used yet — adding
+ * those later is a data change, not a gameplay-code change.
  *
  * `emoji` is a PLACEHOLDER illustration (no artwork exists yet — see
  * README). A real illustration just needs an `image` field added per word;
- * games/letters/game.js already prefers `image` over `emoji` when present.
+ * games/letters-core/engine.js already prefers `image` over `emoji` when
+ * present.
  */
 
-window.LettersContent = {
+window.HebrewLettersContent = {
   // Base alphabet only — final forms never start a word, so they're kept
-  // separate (see spec §10) rather than mixed into the First Letter pool.
+  // separate (spec §5) rather than mixed into the target-word pool.
   alphabet: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'],
 
   finalForms: { 'כ': 'ך', 'מ': 'ם', 'נ': 'ן', 'פ': 'ף', 'צ': 'ץ' },
 
-  // Pairs a beginner easily confuses visually — kept out of the distractor
-  // pool unless a future difficulty setting asks for them (spec §11).
+  // Pairs a beginner easily confuses visually — kept out of the First
+  // Letter distractor pool unless a future difficulty setting asks for
+  // them (spec §19).
   confusablePairs: [['ב', 'כ'], ['ד', 'ר'], ['ו', 'ז'], ['ה', 'ח'], ['ג', 'נ']],
 
   words: [

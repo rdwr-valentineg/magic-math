@@ -90,18 +90,38 @@ remote/
                           totalQuestions, scoring, streak {threshold, bonus}
       game.js                 Math's UI: settings fields, exercise display,
                           numeric keypad — wired to js/core/math-core.js
-    letters/
-      config.js               Choice count, scoring, streak, session modes/
-                          presets/limits, activities list (V1: First Letter
-                          only)
-      content.js               Data-driven word pool (word/firstLetter/
-                          emoji placeholder/difficulty) + the base alphabet
+    letters-core/
+      logic.js                 LettersCoreLogic — pure-logic engine shared
+                          by EVERY letter/word game: content-set filtering
+                          (all/custom letters), unique-target-word tracking
+                          for a session, and the three activities' choice/
+                          distractor builders (Node-testable, see
+                          remote/tests/letters-core-logic.test.js)
+      engine.js                 LettersCoreEngine.createGame(options) — the
+                          shared UI (settings/play/results) for all three
+                          activities (First Letter, Entire Word,
+                          Letter → Image), the content-set picker, and the
+                          Show Word toggle. Takes a language's own
+                          config/content and returns a fresh, independently
+                          stateful {renderSettings,renderPlay,renderResults}
+                          module — see "Letter/Word games" below.
+    hebrew-letters/
+      config.js                Hebrew's own knobs (direction: 'rtl',
+                          activities, choice count, scoring, streak,
+                          session modes/presets/limits)
+      content.js                Hebrew word/letter dataset (one word per
+                          base letter) + the base alphabet, final forms,
                           and a confusable-letter-pairs list
-      logic.js                  Pure-logic question/distractor generation
-                          (Node-testable, see remote/tests/letters-logic.
-                          test.js)
-      game.js                    First Letter activity UI, wired to
-                          content.js/logic.js + session-core.js/session-ui.js
+      game.js                    ~10 lines: calls LettersCoreEngine.
+                          createGame({id, cfg, content}) and registers the
+                          result
+    english-letters/
+      config.js                English's own knobs (direction: 'ltr'),
+                          otherwise mirrors hebrew-letters/config.js
+      content.js                English word/letter dataset (one word per
+                          letter A-Z), same shape as Hebrew's
+      game.js                    Same one-call wiring as hebrew-letters/
+                          game.js, against the English config/content
     numbers/
       config.js               Range limits, per-activity practical quantity
                           caps, scoring, streak, session modes/presets/
@@ -133,6 +153,80 @@ remote/
     theme-manager.test.js      Node tests for the layered background
                           fallback. Run: node remote/tests/theme-manager.test.js
 ```
+
+## Letter/Word games (Hebrew Letters, English Letters)
+
+Hebrew Letters and English Letters are two entries in the Game Registry
+that share one engine. All gameplay logic — the three activities, the
+content-set picker, Show Word, unique-target tracking, distractor
+generation — lives once in `games/letters-core/`. A language is nothing
+more than a `config.js` (direction + gameplay knobs) and a `content.js`
+(alphabet + word dataset) passed into `LettersCoreEngine.createGame(...)`:
+
+```js
+// games/hebrew-letters/game.js (english-letters/game.js is the same shape)
+window.Games['hebrew-letters'] = LettersCoreEngine.createGame({
+  id: 'hebrew-letters',
+  cfg: window.GameConfigs['hebrew-letters'],
+  content: window.HebrewLettersContent
+});
+```
+
+Adding a third language later is exactly this: a new `games/<lang>/
+{config.js,content.js,game.js}` folder plus one `config.json` entry — no
+change to `letters-core/` itself.
+
+**The three activities** (First Letter, Entire Word, Letter → Image) all
+generate their question from the same concept, a "target word", picked
+once per question and never repeated within a session:
+
+- **First Letter** — show the word's illustration (+ the written word if
+  Show Word is on), child taps its first letter among a few letter choices.
+- **Entire Word** — show the illustration (+ the word as a non-selectable
+  hint if Show Word is on), child taps the matching written word among a
+  few word choices.
+- **Letter → Image** — show one big letter, child taps the one image among
+  several whose word starts with it (never any text labels on the images).
+
+**Direction.** Each language's `config.js` sets `direction: 'rtl'|'ltr'`.
+`LettersCoreEngine` stamps that as a `dir` attribute on the specific
+containers it renders (word text, choice grids, the content-set letter
+grid) — never on `<html>` — so English content reads LTR inside the
+still-RTL app shell, the same technique `.exercise`/`.keypad` already use
+for Math's digits.
+
+**Content sets (spec: all letters vs. a custom selection).** Settings
+persist `contentMode: 'all'|'custom'` and, for custom, a `selectedLetters`
+array; `LettersCoreLogic.resolveActiveLetters(...)` turns that into the
+active letter set every other function filters against. An empty custom
+selection is treated as "all" rather than silently generating zero
+questions.
+
+**Unique target words per session (spec: no repeats).** A session-scoped
+`usedIds` set (reset every time a session starts) is checked by
+`pickNextTargetWord` before every question; a wrong answer never marks a
+word used (spec: the child keeps trying the same question). When the
+eligible pool runs out before the session's own end condition
+(`SessionManager#isOver()`), the engine ends the session right there —
+internally this is a "content exhausted" ending rather than a repeated
+target, but Results looks and feels exactly like any other completion.
+
+**Session length vs. available words.** For "questions" mode, the settings
+screen computes how many unique words the current content selection can
+supply and narrows the session picker's presets/limits to that (the same
+technique `games/numbers/game.js` already uses for its practical-quantity
+hint) — so you can never configure "30 questions" against 18 available
+words. Score/time modes aren't pre-validated this way; they simply end
+early via content exhaustion if they run out.
+
+**Distractors.** Letter choices, word choices, and image choices are all
+drawn from the *active* content set first, widening to the full language
+dataset only if that set is too small to supply enough distinct
+distractors (`LettersCoreLogic.candidatePool`) — this is what keeps a
+narrow custom letter selection from ever making a question impossible to
+generate. Letter → Image additionally guarantees exactly one correct image
+is ever shown (distractor images are always words with a *different*
+first letter).
 
 ## How the layered background/theme system works
 
@@ -194,7 +288,7 @@ streak})` and calls exactly two methods:
 needed, and deliberately no numeric countdown for time mode.
 
 The session engine is intentionally ignorant of exercises/questions: each
-game still owns generating its own next question (see games/letters/
+game still owns generating its own next question (see games/letters-core/
 logic.js and games/numbers/logic.js) and only reports correct/incorrect.
 Math has not been migrated to this system — it keeps its own
 `MagicMathCore.GameSession` (fixed 10-question sessions) unchanged.
@@ -246,7 +340,8 @@ remote/assets/characters/<id>/
 list entry is optional except the four `character/` poses and
 `select.webp`** — a missing background, environment/decoration/icon, or
 audio clip is simply skipped at runtime, never a crash. Educational content
-(e.g. letter sounds for the future Letters game) belongs under
+(e.g. future letter/word pronunciation audio for Hebrew Letters or English
+Letters) belongs under
 `games/<id>/assets/`, never under a character folder — characters own only
 their own reactions, never a game's teaching material.
 
@@ -384,7 +479,7 @@ Then either:
 node remote/tests/game-logic.test.js
 node remote/tests/theme-manager.test.js
 node remote/tests/session-core.test.js
-node remote/tests/letters-logic.test.js
+node remote/tests/letters-core-logic.test.js
 node remote/tests/numbers-logic.test.js
 ```
 
@@ -394,11 +489,13 @@ resetting immediately on a wrong answer, fully configurable thresholds/
 bonuses/scoring). `theme-manager.test.js` covers `ThemeManager`'s 5-layer
 background fallback using fake manifests. `session-core.test.js` covers
 `SessionManager`'s three session modes (questions/score/time ending at the
-right moment) and its scoring/streak rules. `letters-logic.test.js` and
-`numbers-logic.test.js` cover each game's pure-logic question/distractor
-generation (correct answer always present exactly once, confusable letters
-excluded, quantities respect the practical render cap, zero is reachable,
-etc.).
+right moment) and its scoring/streak rules. `letters-core-logic.test.js`
+covers the shared Letter/Word engine (content-set filtering, unique-target
+selection and content exhaustion, and all three activities' distractor
+builders — including Letter → Image's "exactly one correct image"
+invariant) shared by both Hebrew Letters and English Letters.
+`numbers-logic.test.js` covers Numbers' pure-logic question generation
+(quantities respect the practical render cap, zero is reachable, etc.).
 
 ## Deploying `remote/` to GitHub Pages
 

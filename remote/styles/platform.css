@@ -556,7 +556,31 @@ button { font-family: inherit; cursor: pointer; }
 .tap-choice-btn:active { transform: scale(0.94); }
 .tap-choice-btn--number { direction: ltr; }
 
-/* ---------------- Letters: First Letter activity ---------------- */
+/* ---------------- Letters/Words: settings (content-set picker) ---------------- */
+
+.letter-content-picker {
+  display: flex; flex-direction: column; gap: 10px;
+  width: 100%; max-width: 480px; margin: 4px auto;
+}
+
+.letter-content-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; }
+.letter-content-btn {
+  min-width: 44px; min-height: 44px;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 800;
+  padding: 8px 10px;
+  box-shadow: 0 6px 14px rgba(30, 15, 70, 0.16);
+}
+.letter-content-btn.is-selected { border-color: var(--theme-accent); background: var(--card-bg-soft); }
+.letter-content-btn:active { transform: scale(0.94); }
+
+/* ---------------- Letters/Words: shared activity body ---------------- */
+
+.letters-activity-body { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
 
 .letter-word-card {
   background: var(--glass-bg);
@@ -570,6 +594,25 @@ button { font-family: inherit; cursor: pointer; }
 .letter-illustration { font-size: 64px; line-height: 1; }
 .letter-illustration-img { width: 96px; height: 96px; object-fit: contain; }
 .letter-word-text { font-size: 20px; font-weight: 800; color: var(--glass-text); }
+
+/* Entire Word mode's optional Show-Word hint (spec §10) — visually distinct
+   from a selectable choice, since it is a reference, never a button. */
+.word-hint { font-size: 18px; font-weight: 700; color: var(--glass-text-soft); font-style: italic; }
+
+.tap-choice-btn--word { font-size: 18px; padding: 10px 14px; min-height: 64px; }
+
+/* Letter -> Image mode: images only, no text labels by default (spec §11). */
+.tap-choice-btn--image { padding: 10px; }
+.tap-choice-illustration { font-size: 40px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.tap-choice-illustration-img { width: 56px; height: 56px; object-fit: contain; }
+
+.letter-target-badge {
+  background: var(--glass-bg); color: var(--glass-text);
+  font-size: 56px; font-weight: 900;
+  border-radius: var(--radius-lg);
+  padding: 10px 36px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+}
 
 /* ---------------- Numbers: shared activity body ---------------- */
 
