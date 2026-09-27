@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="refresh" content="0; url=./remote/" />
+<title>משחקי קסם</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #6c4fd1; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: #fff;
+  }
+  a { color: #fff; }
+</style>
+</head>
+<body>
+  <!--
+    This repo root exists only so the custom domain (games.valice.uk) lands
+    somewhere other than GitHub Pages' default README-as-homepage fallback
+    (GitHub Pages serves README.md as "/" whenever no index.html is
+    present). The real, portable app lives in remote/ and is what every
+    other entry point (this redirect, and distribution/magic-math.html)
+    ultimately points at — see README.md.
+  -->
+  <p>טוען... אם לא מועברים אוטומטית, <a href="./remote/">לחצו כאן</a>.</p>
+  <script>location.replace('./remote/');</script>
+</body>
+</html>
