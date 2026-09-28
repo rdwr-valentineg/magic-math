@@ -79,10 +79,14 @@ var SessionUI = (function () {
         onClick: function () { onChange({ mode: current.mode, value: presetValue }); }
       }, [UI.h('span', { text: String(presetValue) + unit })]));
     });
-    wrap.appendChild(presetGrid);
 
-    var customRow = UI.h('div', { class: 'session-custom-row' }, [
-      UI.h('span', { class: 'session-custom-label', text: 'מותאם אישית:' }),
+    // The "custom" value is just one more chip in the same row/grid as the
+    // presets, rather than a separate control below them — it only gets
+    // the is-selected treatment when the current value isn't one of the
+    // presets already highlighted above.
+    var isCustom = presets.indexOf(current.value) === -1;
+    presetGrid.appendChild(UI.h('label', { class: 'session-custom-chip' + (isCustom ? ' is-selected' : '') }, [
+      UI.h('span', { class: 'session-custom-chip-label', text: 'מותאם:' }),
       UI.h('input', {
         type: 'number',
         class: 'session-custom-input',
@@ -97,8 +101,8 @@ var SessionUI = (function () {
           onChange({ mode: current.mode, value: v });
         }
       })
-    ]);
-    wrap.appendChild(customRow);
+    ]));
+    wrap.appendChild(presetGrid);
 
     return wrap;
   }

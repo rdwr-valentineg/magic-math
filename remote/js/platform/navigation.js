@@ -130,6 +130,7 @@ var Platform = (function () {
   function renderHome() {
     var screen = UI.h('section', { class: 'screen screen-home' });
     addWelcomeBackground(screen);
+    screen.appendChild(UI.muteButton(render));
 
     var titleBlock = UI.h('div', { class: 'welcome-header' }, [
       UI.h('div', { class: 'welcome-sparkle', 'aria-hidden': 'true', text: '✨' }),
@@ -206,10 +207,13 @@ var Platform = (function () {
       grid.appendChild(UI.h('button', {
         type: 'button',
         class: 'character-card' + (isSelected ? ' is-selected' : ''),
+        disabled: state.loading ? 'disabled' : null,
         onClick: function () {
+          if (state.loading) return;
           state.selectedCharacterId = c.id;
           Storage.setSelectedCharacter(c.id);
           render();
+          onCharacterGoClick();
         }
       }, [
         UI.h('img', { class: 'character-card-img', src: CharacterManager.assetUrl(baseUrl, version, c.id, 'character/select.webp'), alt: c.name, draggable: 'false' }),
@@ -217,18 +221,10 @@ var Platform = (function () {
       ]));
     });
 
-    var goButton = UI.h('button', {
-      type: 'button',
-      class: 'primary-button',
-      disabled: !state.selectedCharacterId ? 'disabled' : null,
-      onClick: onCharacterGoClick
-    }, [UI.h('span', { 'aria-hidden': 'true', text: '▶' }), UI.h('span', { text: 'קדימה!' })]);
-
     var status = UI.h('p', { class: 'welcome-status', id: 'character-select-status' });
 
     screen.appendChild(titleBlock);
     screen.appendChild(grid);
-    screen.appendChild(goButton);
     screen.appendChild(status);
     return screen;
   }

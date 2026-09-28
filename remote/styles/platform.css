@@ -127,6 +127,13 @@ button { font-family: inherit; cursor: pointer; }
   margin: 8px 0 16px;
 }
 
+/* Landscape phones/tablets are wide but short, so the 2-column layout
+   forces a tall scrolling grid; 4 columns halves the row count and lets
+   the whole roster fit without scrolling on most devices. */
+@media (orientation: landscape) and (min-width: 560px) {
+  .character-grid { grid-template-columns: repeat(4, 1fr); max-width: 680px; }
+}
+
 .character-card {
   background: var(--card-bg);
   border: 3px solid transparent;
@@ -140,8 +147,9 @@ button { font-family: inherit; cursor: pointer; }
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.character-card:active { transform: scale(0.96); }
+.character-card:active:not(:disabled) { transform: scale(0.96); }
 .character-card.is-selected { border-color: var(--theme-accent); }
+.character-card:disabled { opacity: 0.55; }
 
 .character-card-img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
 .character-card-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
@@ -157,6 +165,10 @@ button { font-family: inherit; cursor: pointer; }
   width: 100%;
   max-width: 480px;
   margin: 8px 0 16px;
+}
+
+@media (orientation: landscape) and (min-width: 560px) {
+  .game-grid { grid-template-columns: repeat(4, 1fr); max-width: 680px; }
 }
 
 .game-card {
@@ -244,9 +256,9 @@ button { font-family: inherit; cursor: pointer; }
   border: none;
   border-radius: 999px;
   background: rgba(255,255,255,0.92);
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,20 +268,25 @@ button { font-family: inherit; cursor: pointer; }
 
 .chrome-btn:active { transform: scale(0.94); }
 .chrome-btn--exit { position: absolute; top: calc(16px + var(--safe-top)); left: calc(16px + var(--safe-left)); z-index: 5; }
+.chrome-btn--mute { position: absolute; top: calc(16px + var(--safe-top)); right: calc(16px + var(--safe-right)); z-index: 5; }
 
 .screen-settings .chrome-btn--exit,
 .screen-results .chrome-btn--exit { position: absolute; }
+
+.game-topbar .chrome-btn--mute { position: static; }
 
 /* ---------------- Settings ---------------- */
 
 .screen-settings { align-items: stretch; }
 
 .settings-character {
+  position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.22);
   border-radius: var(--radius-lg);
   padding: 14px;
   margin: 36px auto 8px;
@@ -277,7 +294,23 @@ button { font-family: inherit; cursor: pointer; }
   width: 100%;
 }
 
-.settings-character-img { width: 130px; aspect-ratio: 1 / 1; object-fit: contain; }
+/* Same spotlight-behind-the-character trick as .game-character-wrap, sized
+   to the smaller settings portrait. */
+.settings-character::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  width: 168px;
+  height: 138px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse 50% 50% at 50% 55%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.45) 48%, rgba(255,255,255,0) 78%);
+  filter: blur(3px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.settings-character-img { width: 130px; aspect-ratio: 1 / 1; object-fit: contain; filter: drop-shadow(0 10px 16px rgba(0,0,0,0.3)); }
 
 .section-title { color: #fff; font-size: 17px; margin: 14px 2px 6px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); align-self: center; width: 100%; max-width: 480px; }
 
@@ -391,8 +424,28 @@ button { font-family: inherit; cursor: pointer; }
 
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-.game-character-wrap { position: relative; width: min(55vw, 210px); flex: 1; display: flex; align-items: center; justify-content: center; min-height: 120px; }
-.game-character-img { width: 100%; max-height: 32vh; object-fit: contain; display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25)); }
+/* z-index:0 makes this its own stacking context, so the glow plate below
+   (z-index:-1) stays scoped behind the character within this box and can
+   never slip beneath unrelated sibling UI in the wider .game-chrome stack. */
+.game-character-wrap { position: relative; z-index: 0; width: min(55vw, 210px); flex: 1; display: flex; align-items: center; justify-content: center; min-height: 120px; }
+
+/* Soft light "spotlight" plate sitting between the busy scene background
+   and the character, so the sprite reads as standing in front of the art
+   instead of blending into it, whatever the background's own colors are. */
+.game-character-wrap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 88%;
+  height: 62%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse 50% 50% at 50% 55%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.45) 48%, rgba(255,255,255,0) 78%);
+  filter: blur(3px);
+  z-index: -1;
+  pointer-events: none;
+}
+.game-character-img { width: 100%; max-height: 32vh; object-fit: contain; display: block; filter: drop-shadow(0 12px 20px rgba(0,0,0,0.35)) drop-shadow(0 3px 8px rgba(0,0,0,0.25)); }
 
 .fx-layer { position: absolute; inset: -30px; pointer-events: none; overflow: visible; }
 .fx-particle { position: absolute; font-size: 22px; top: 50%; left: 50%; animation: burst 0.9s ease-out forwards; }
@@ -533,11 +586,19 @@ button { font-family: inherit; cursor: pointer; }
 .session-preset-btn.is-selected { border-color: var(--theme-accent); background: var(--card-bg-soft); }
 .session-preset-btn:active { transform: scale(0.95); }
 
-.session-custom-row {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  background: rgba(255,255,255,0.16); border-radius: var(--radius-md); padding: 10px 14px;
+/* Sits inline as one more chip in .session-preset-grid (same background/
+   text tokens as .session-preset-btn, so it reads as "one of the options"
+   rather than a visually separate control on its own row). */
+.session-custom-chip {
+  display: flex; align-items: center; gap: 6px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  padding: 6px 10px;
+  box-shadow: 0 6px 14px rgba(30, 15, 70, 0.16);
 }
-.session-custom-label { color: #fff; font-size: 14px; font-weight: 600; }
+.session-custom-chip.is-selected { border-color: var(--theme-accent); background: var(--card-bg-soft); }
+.session-custom-chip-label { font-size: 14px; font-weight: 700; color: var(--text-main); white-space: nowrap; }
 
 /* ---------------- shared: numeric input fields ---------------- */
 
@@ -557,13 +618,19 @@ button { font-family: inherit; cursor: pointer; }
 .range-field-row { display: flex; gap: 16px; justify-content: center; }
 .range-field { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--text-main); }
 
+/* Fixed glass tokens (not --card-bg/--text-main) so an informational note
+   always renders dark-on-light, regardless of character theme or whether
+   the screen has photo art. */
 .settings-hint {
-  color: rgba(255,255,255,0.92);
+  color: var(--glass-text);
+  background: var(--glass-bg);
   font-size: 13px;
   text-align: center;
   max-width: 420px;
-  margin: -4px auto 4px;
-  padding: 0 8px;
+  margin: 0 auto;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 14px rgba(30, 15, 70, 0.12);
 }
 
 /* ---------------- Session progress bar ---------------- */

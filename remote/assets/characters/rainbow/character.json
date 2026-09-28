@@ -19,6 +19,12 @@
     "celebration": { "focus": [0.5, 0.35], "stage": [0.5, 0.64] },
     "distant": { "focus": [0.6, 0.35] }
   },
+  "backgroundsPortrait": {
+    "game": "backgrounds/game-mobile.webp",
+    "celebration": "backgrounds/celebration-mobile.webp",
+    "tryAgain": "backgrounds/try-again-mobile.webp",
+    "distant": "backgrounds/distant-mobile.webp"
+  },
   "environment": [
     "environment/crystal-cluster.webp",
     "environment/crystal-mound.webp",

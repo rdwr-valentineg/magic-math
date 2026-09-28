@@ -73,7 +73,7 @@
     ensureSettingsInitialized();
 
     var screen = UI.h('section', { class: 'screen screen-settings' });
-    Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true });
+    Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true, blur: false });
     screen.appendChild(UI.exitButton(ctx.onExitDirect));
 
     var charCfg = CharacterRegistry.findById(ctx.characterId);
@@ -375,7 +375,9 @@
           goToResults(ctx, manager);
         } else {
           generateNextQuestion();
-          playUi.characterPose = 'idle';
+          // characterPose/bgState are left as-is: the last answer's happy/
+          // tryAgain look stays until the next answer's outcome replaces
+          // it, rather than resetting to idle in between.
           playUi.busy = false;
           ctx.onUpdate();
         }
@@ -388,9 +390,9 @@
       showScorePop(String(result.pointsGained), true);
 
       window.setTimeout(function () {
-        // Same question stays active on a wrong answer (spec §25) — only
-        // pose/background reset.
-        playUi.characterPose = 'idle';
+        // Same question stays active on a wrong answer (spec §25) — pose/
+        // background stay too, until the next answer's outcome replaces
+        // them.
         playUi.busy = false;
         ctx.onUpdate();
       }, 900);

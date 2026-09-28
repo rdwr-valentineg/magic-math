@@ -19,6 +19,33 @@ This means the platform can be fixed, restyled, given new games/characters,
 or reskinned by pushing to `remote/` and bumping a version number —
 **without ever re-sending `magic-math.html` to anyone**.
 
+## Repo root
+
+Everything above lives under `remote/` and `distribution/`; a handful of
+files sit at the repo root purely for GitHub Pages hosting and are not part
+of the app itself:
+
+```
+index.html          Redirects "/" to "./remote/" (client-side + a meta
+                    refresh). Exists only because GitHub Pages serves
+                    README.md as the homepage whenever no index.html is
+                    present — this repo's real homepage is the app.
+readme/index.html    A static docs page at the clean "/readme" URL: fetches
+                    README.md at runtime and renders it client-side with
+                    marked.js (falls back to a plain link to the raw file
+                    if that fails). Kept as a separate file/folder from
+                    README.md itself since GitHub's own rendering of the
+                    .md file and this styled, linkable page serve different
+                    audiences.
+CNAME                The custom domain for GitHub Pages (games.valice.uk).
+.nojekyll            Tells GitHub Pages not to run Jekyll processing (so
+                    filenames/folders starting with an underscore, if any
+                    are ever added, are served as-is).
+```
+
+Every one of these is self-documented with its own inline comment — read
+the file itself for the full reasoning.
+
 ## Architecture: platform, games, characters
 
 The app is split into three independent layers plus a shared boot sequence:
@@ -113,17 +140,19 @@ remote/
       config.js                Hebrew's own knobs (direction: 'rtl',
                           activities, choice count, scoring, streak,
                           session modes/presets/limits)
-      content.js                Hebrew word/letter dataset (one word per
-                          base letter) + the base alphabet, final forms,
-                          and a confusable-letter-pairs list
+      content.js                Hebrew word/letter dataset (several words
+                          per base letter, so a session can ask more
+                          questions than there are letters without
+                          repeating a target) + the base alphabet, final
+                          forms, and a confusable-letter-pairs list
       game.js                    ~10 lines: calls LettersCoreEngine.
                           createGame({id, cfg, content}) and registers the
                           result
     english-letters/
       config.js                English's own knobs (direction: 'ltr'),
                           otherwise mirrors hebrew-letters/config.js
-      content.js                English word/letter dataset (one word per
-                          letter A-Z), same shape as Hebrew's
+      content.js                English word/letter dataset (several words
+                          per letter A-Z), same shape as Hebrew's
       game.js                    Same one-call wiring as hebrew-letters/
                           game.js, against the English config/content
     numbers/
@@ -209,6 +238,13 @@ active letter set every other function filters against. An empty custom
 selection is treated as "all" rather than silently generating zero
 questions.
 
+**Show Word** is a plain on/off pill (`settings.showWord`, only rendered
+for the activities listed in `cfg.showWordActivities`) sitting in the same
+pill row as the "all letters"/"custom selection" buttons — an independent
+toggle, not mutually exclusive with them, just placed there to stay
+compact. It only affects First Letter/Entire Word (Letter → Image never
+reveals a word).
+
 **Unique target words per session (spec: no repeats).** A session-scoped
 `usedIds` set (reset every time a session starts) is checked by
 `pickNextTargetWord` before every question; a wrong answer never marks a
@@ -225,6 +261,12 @@ technique `games/numbers/game.js` already uses for its practical-quantity
 hint) — so you can never configure "30 questions" against 18 available
 words. Score/time modes aren't pre-validated this way; they simply end
 early via content exhaustion if they run out.
+
+The `settings-hint` note ("X unique words available...") only renders when
+the pool is actually smaller than the largest preset on offer (i.e. it
+would really constrain a choice) — with enough words in the pool to cover
+every preset, the note is irrelevant and stays hidden rather than showing
+as permanent clutter.
 
 **Distractors.** Letter choices, word choices, and image choices are all
 drawn from the *active* content set first, widening to the full language
@@ -255,6 +297,16 @@ every optional background — a missing one just falls through to the next
 layer, automatically, with zero code changes. Adding a `games/math/assets/
 backgrounds/streak.webp` later immediately gives every character a shared
 streak backdrop unless they already override it.
+
+**Feedback state persists until the next answer.** Each game's play screen
+keeps its own `playUi.characterPose`/`playUi.bgState` (`idle` at session
+start, `happy`/`celebration`+`streak` on a correct answer, `tryAgain`+
+`wrong` on an incorrect one). Neither is reset back to `idle` on a timer —
+the brief `setTimeout` after an answer only unlocks input and advances the
+question; the last result's pose/background stay exactly as they were
+until the *next* recorded answer overwrites them. This is deliberate: it
+reads as continuous feedback ("still happy" / "still stuck") rather than
+flickering back to neutral between questions.
 
 ### Fitting every screen: portrait art, focus and stage
 
@@ -313,8 +365,11 @@ session: {
 ```
 
 `SessionUI.renderPicker(...)` turns that into the "משחקים לפי: שאלות /
-ניקוד / זמן" settings UI (tabs + presets + a custom numeric field, synced),
-and persists the choice per-game via `Storage`. At play time, the game
+ניקוד / זמן" settings UI (mode tabs + a preset grid) and persists the
+choice per-game via `Storage`. The custom numeric field renders as one more
+chip inline in that same preset grid (styled identically to the preset
+buttons, highlighted only when the value doesn't match a preset) rather
+than as a separate row below it. At play time, the game
 creates one `MagicMathSessionCore.SessionManager(sessionConfig, {scoring,
 streak})` and calls exactly two methods:
 
@@ -445,11 +500,19 @@ can be:
 without editing a single line of application code. `manifest.webmanifest`
 uses relative `start_url`/`scope` (`"."`) for the same reason.
 
-The **only** intentional exception in the whole repo is
-`distribution/magic-math.html` (and `distribution/share.html`), whose
-entire job is to point at wherever `remote/` is actually hosted — that one
-hardcoded `DEFAULT_REMOTE_BASE` constant is what a launcher fundamentally
-needs to do its job, and is overridable with `?base=...` for local testing.
+The intentional exceptions are the two files in `distribution/`, whose
+entire job is to point at wherever `remote/` is actually hosted:
+
+- `magic-math.html` hardcodes one `DEFAULT_REMOTE_BASE` constant (what a
+  launcher fundamentally needs to do its job), overridable with `?base=...`
+  for local testing.
+- `share.html` is plain static HTML (no script, so it still works inside a
+  restricted preview that won't run JavaScript, e.g. an AirDrop/Messages
+  Quick Look) with a hardcoded `<a href="...magic-math.html">` pointing at
+  the same hosted launcher — no override mechanism, so it has to be edited
+  by hand if the hosting URL ever changes. **These two URLs are not derived
+  from one another** — keep them in sync manually if you move where
+  `distribution/` is hosted.
 
 ## Offline / PWA
 
@@ -550,10 +613,12 @@ invariant) shared by both Hebrew Letters and English Letters.
 2. In the repository, go to **Settings → Pages**, set **Source** to
    `Deploy from a branch`, choose `main` and `/ (root)`, then **Save**.
 3. Once Pages is live, `remote/` is served at
-   `https://<user>.github.io/<repo>/remote/`. Update
-   `DEFAULT_REMOTE_BASE` in `distribution/magic-math.html` to match if you
-   forked this under a different account/repo name — that constant is the
-   one intentional exception described under "Portability" above.
+   `https://<user>.github.io/<repo>/remote/`. If you forked this under a
+   different account/repo name, update both of the hardcoded URLs described
+   under "Portability" above: `DEFAULT_REMOTE_BASE` in
+   `distribution/magic-math.html`, and the `<a href>` in
+   `distribution/share.html` (which should point at your redeployed
+   `magic-math.html`).
 4. To serve the platform from a custom subdomain instead, point it at
    `remote/` (or its contents, at the domain root) — no code changes are
    needed either way, since nothing under `remote/` hardcodes its own URL.
@@ -568,3 +633,10 @@ As long as they have internet access on first open, the game loads.
 Alternatively, share the direct URL to `remote/index.html` (wherever it's
 hosted) — visitors can install it to their home screen and play offline
 after the first load.
+
+For sharing a *link* rather than a file (a chat message, a QR code), point
+people at the hosted `distribution/share.html` instead: it's a small,
+script-free "▶ שחקו עכשיו!" card that still renders (and its link still
+works) inside a restricted in-app preview that won't run JavaScript —
+tapping it hands off to a real browser, where `magic-math.html` loads
+normally.

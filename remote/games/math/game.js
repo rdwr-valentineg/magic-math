@@ -94,7 +94,7 @@
     ensureSettingsInitialized();
 
     var screen = UI.h('section', { class: 'screen screen-settings' });
-    Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true });
+    Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true, blur: false });
     screen.appendChild(UI.exitButton(ctx.onExitDirect));
 
     var charCfg = CharacterRegistry.findById(ctx.characterId);
@@ -341,9 +341,9 @@
         if (result.finished) {
           goToResults(ctx, session);
         } else {
-          // bgState is left as-is (set above): a streak's celebration
-          // background stays until the next answer's outcome replaces it.
-          playUi.characterPose = 'idle';
+          // characterPose/bgState are left as-is (set above): the last
+          // answer's happy/tryAgain look stays until the next answer's
+          // outcome replaces it, rather than resetting to idle in between.
           playUi.inputValue = '';
           playUi.busy = false;
           ctx.onUpdate();
@@ -357,7 +357,6 @@
       showScorePop(String(result.pointsGained), true);
 
       window.setTimeout(function () {
-        playUi.characterPose = 'idle';
         playUi.inputValue = '';
         playUi.busy = false;
         ctx.onUpdate();

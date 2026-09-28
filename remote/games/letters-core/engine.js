@@ -135,7 +135,7 @@ var LettersCoreEngine = (function () {
       reconcileSessionValue();
 
       var screen = UI.h('section', { class: 'screen screen-settings' });
-      Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true });
+      Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true, blur: false });
       screen.appendChild(UI.exitButton(ctx.onExitDirect));
 
       var charCfg = CharacterRegistry.findById(ctx.characterId);
@@ -166,14 +166,13 @@ var LettersCoreEngine = (function () {
       var contentHeading = UI.h('h2', { class: 'section-title', text: 'אילו אותיות לתרגל?' });
       var contentPicker = renderContentPicker(ctx);
 
-      var showWordBlock = null;
-      if (cfg.showWordActivities.indexOf(settings.activity) !== -1) {
-        showWordBlock = renderShowWordToggle(ctx);
-      }
-
       var eligibleCount = eligibleWordCount();
+      // Irrelevant (and not shown) whenever the pool already covers every
+      // preset on offer — the note only matters once it actually rules out
+      // a choice the player could otherwise make.
+      var maxOfferedQuestions = Math.max.apply(null, cfg.session.presets.questions);
       var hint = null;
-      if (eligibleCount < cfg.session.limits.questions.max) {
+      if (eligibleCount < maxOfferedQuestions) {
         hint = UI.h('p', {
           class: 'settings-hint',
           text: eligibleCount > 0
@@ -204,7 +203,6 @@ var LettersCoreEngine = (function () {
       screen.appendChild(activityTabs);
       screen.appendChild(contentHeading);
       screen.appendChild(contentPicker);
-      if (showWordBlock) screen.appendChild(showWordBlock);
       if (hint) screen.appendChild(hint);
       screen.appendChild(sessionPicker);
       screen.appendChild(startButton);
@@ -234,6 +232,21 @@ var LettersCoreEngine = (function () {
           }
         }, [UI.h('span', { text: 'בחירה אישית' })])
       ]);
+
+      // Same row as the content-mode pills rather than its own control —
+      // it's an independent on/off pill (not mutually exclusive with
+      // "all"/"custom"), just placed alongside them to stay compact.
+      if (cfg.showWordActivities.indexOf(settings.activity) !== -1) {
+        modeTabs.appendChild(UI.h('button', {
+          type: 'button',
+          class: 'pill-tab' + (settings.showWord ? ' is-selected' : ''),
+          onClick: function () {
+            settings.showWord = !settings.showWord;
+            Storage.setGameJSON(id, 'showWord', settings.showWord);
+            ctx.onUpdate();
+          }
+        }, [UI.h('span', { text: 'הצגת מילה' })]));
+      }
       wrap.appendChild(modeTabs);
 
       if (settings.contentMode === 'custom') {
@@ -255,24 +268,6 @@ var LettersCoreEngine = (function () {
         wrap.appendChild(grid);
       }
 
-      return wrap;
-    }
-
-    function renderShowWordToggle(ctx) {
-      var wrap = UI.h('div', { class: 'letter-content-picker' });
-      wrap.appendChild(UI.h('h2', { class: 'section-title', text: 'הצגת המילה הכתובה' }));
-      wrap.appendChild(UI.h('div', { class: 'pill-tabs' }, [
-        UI.h('button', {
-          type: 'button',
-          class: 'pill-tab' + (settings.showWord ? ' is-selected' : ''),
-          onClick: function () { settings.showWord = true; Storage.setGameJSON(id, 'showWord', true); ctx.onUpdate(); }
-        }, [UI.h('span', { text: 'מוצג' })]),
-        UI.h('button', {
-          type: 'button',
-          class: 'pill-tab' + (!settings.showWord ? ' is-selected' : ''),
-          onClick: function () { settings.showWord = false; Storage.setGameJSON(id, 'showWord', false); ctx.onUpdate(); }
-        }, [UI.h('span', { text: 'מוסתר' })])
-      ]));
       return wrap;
     }
 
@@ -484,7 +479,9 @@ var LettersCoreEngine = (function () {
             goToResults(ctx, manager);
             return;
           }
-          playUi.characterPose = 'idle';
+          // characterPose/bgState are left as-is: the last answer's happy/
+          // tryAgain look stays until the next answer's outcome replaces
+          // it, rather than resetting to idle in between.
           playUi.busy = false;
           ctx.onUpdate();
         }, delay);
@@ -499,7 +496,6 @@ var LettersCoreEngine = (function () {
         showScorePop(String(result.pointsGained), true);
 
         window.setTimeout(function () {
-          playUi.characterPose = 'idle';
           playUi.busy = false;
           ctx.onUpdate();
         }, 900);

@@ -13,6 +13,12 @@
     "tryAgain": "backgrounds/try-again.webp",
     "distant": "backgrounds/distant.webp"
   },
+  "backgroundsPortrait": {
+    "game": "backgrounds/game-mobile.webp",
+    "celebration": "backgrounds/celebration-mobile.webp",
+    "tryAgain": "backgrounds/try-again-mobile.webp",
+    "distant": "backgrounds/distant-mobile.webp"
+  },
   "environment": [
     "environment/flag-left.webp",
     "environment/flag-right.webp",

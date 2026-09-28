@@ -6,7 +6,8 @@ tablets get a **landscape** one. The rules below come from measuring the
 real layout on a phone (390×844), tablets (820×1180 and 1180×820) and a PC
 (1440×900).
 
-Unicorn is done (landscape + `-mobile`). Use it as the reference.
+All 8 characters now have their full set (landscape + `-mobile`); unicorn
+remains a good reference for the export settings/crop below.
 
 ## Images to make
 
@@ -25,17 +26,20 @@ Each character needs 8 files in `remote/assets/characters/<id>/backgrounds/`:
 
 Checklist:
 
-- [ ] **dinosaur** — 8 files
-- [ ] **dragon** — 8 files
-- [ ] **kitten** — 8 files
-- [ ] **princess** — 8 files
-- [ ] **race-car** — 8 files
-- [ ] **robot** — 8 files
-- [ ] **rainbow** — 8 files (its current 4 are byte-identical copies of unicorn's; skip only if that's intended)
-- [ ] **global welcome** — `remote/assets/global/backgrounds/welcome.webp` (1920×1080) and `welcome-mobile.webp` (1080×1920), behind Home and Character Select. Already wired in `config.json`; until the files exist the gradient shows.
+- [x] **dinosaur** — 8 files
+- [x] **dragon** — 8 files (own art, no longer missing the `-mobile` variants)
+- [x] **kitten** — 8 files
+- [x] **princess** — 8 files
+- [x] **race-car** — 8 files
+- [x] **robot** — 8 files
+- [x] **rainbow** — 8 files (own art; no longer a copy of unicorn's)
+- [x] **unicorn** — 8 files
+- [x] **global welcome** — `remote/assets/global/backgrounds/homepage.webp` (1920×1080) and `homepage-mobile.webp` (1080×1920), behind Home and Character Select. Wired in `config.json`'s `welcomeBackground`.
 
-58 images total. Export as WebP (quality ~85). Portrait and landscape of the same
-state should be the same scene recomposed, not two different places.
+All 58 images are in place — this checklist is complete. Keep the rules
+below in mind for the *next* character/game world added. Export as WebP
+(quality ~85); portrait and landscape of the same state should be the same
+scene recomposed, not two different places.
 
 ## Rules for every image
 
@@ -120,7 +124,12 @@ Worlds, taken from the current art:
 
 ## After uploading: add to `character.json`
 
-Add this block next to `"backgrounds"` (the same values as unicorn). If the art
+**Don't skip this step** — a `-mobile.webp` file sitting in `backgrounds/`
+does nothing by itself; `ThemeManager.resolveBackground` only ever picks it
+up via the character's own `backgroundsPortrait` map (verified: this was
+missing for 7 of the 8 shipped characters even after all the files existed
+— see git history around the `backgroundsPortrait` additions). Add this
+block next to `"backgrounds"` (the same values as unicorn). If the art
 follows the zones above, it works without tuning:
 
 ```json

@@ -71,9 +71,11 @@ var Scene = (function () {
   // Adds the background to `screen`. `resolve(orientation)` returns
   // { url, layout } for 'portrait' or 'landscape' — the screen's current
   // orientation is used, and the image is swapped if the device rotates.
-  // opts.soft → blurred + tinted, for screens full of cards and text
-  // (settings, home). Returns a handle for stageCharacter(), or null when
-  // there's no image at all (gradient fallback).
+  // opts.soft → fixed + tinted, for screens full of cards and text
+  // (settings, home); also blurred unless opts.blur is explicitly false
+  // (crisp art behind cards, still tinted for text contrast). Returns a
+  // handle for stageCharacter(), or null when there's no image at all
+  // (gradient fallback).
   function addBackground(screen, resolve, opts) {
     opts = opts || {};
     var orientation = currentOrientation();
@@ -82,8 +84,10 @@ var Scene = (function () {
       screen.classList.add('game-bg-fallback');
       return null;
     }
+    var cls = opts.soft ? 'screen-bg' : 'game-bg';
+    if (opts.soft && opts.blur !== false) cls += ' screen-bg--soft';
     var img = UI.h('img', {
-      class: opts.soft ? 'screen-bg screen-bg--soft' : 'game-bg',
+      class: cls,
       alt: '',
       'aria-hidden': 'true',
       draggable: 'false'
