@@ -13,6 +13,12 @@
     "tryAgain": "backgrounds/try-again.webp",
     "distant": "backgrounds/distant.webp"
   },
+  "backgroundLayout": {
+    "game": { "focus": [0.58, 0.3], "stage": [0.58, 0.56] },
+    "tryAgain": { "focus": [0.86, 0.3], "stage": [0.72, 0.58] },
+    "celebration": { "focus": [0.5, 0.35], "stage": [0.5, 0.64] },
+    "distant": { "focus": [0.6, 0.35] }
+  },
   "environment": [
     "environment/crystal-cluster.webp",
     "environment/crystal-mound.webp",

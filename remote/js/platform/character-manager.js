@@ -72,8 +72,15 @@ var CharacterManager = (function () {
     ['idle', 'happy', 'tryAgain', 'celebration'].forEach(function (key) {
       if (manifest.character && manifest.character[key]) images.push(base + manifest.character[key] + v);
     });
-    if (manifest.backgrounds && manifest.backgrounds.game) images.push(base + manifest.backgrounds.game + v);
-    if (manifest.backgrounds && manifest.backgrounds.celebration) images.push(base + manifest.backgrounds.celebration + v);
+    // Background images for the screens right after this preload (settings
+    // = distant, play = game, streak/results = celebration), in the variant
+    // this screen's orientation will actually show.
+    var portrait = window.innerWidth < window.innerHeight;
+    ['distant', 'game', 'celebration'].forEach(function (key) {
+      var rel = (portrait && manifest.backgroundsPortrait && manifest.backgroundsPortrait[key]) ||
+        (manifest.backgrounds && manifest.backgrounds[key]);
+      if (rel) images.push(base + rel + v);
+    });
 
     var audioUrls = [];
     if (manifest.audio) {

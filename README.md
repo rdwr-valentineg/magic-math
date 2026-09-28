@@ -40,8 +40,8 @@ remote/
                           then Platform.init(...). Everything it loads is
                           relative to `baseUrl`, never to its own location —
                           that's what makes remote/ portable.
-  config.json             { version, games[] (id/name/icon/enabled),
-                          characters[] (id/name/theme) }
+  config.json             { version, welcomeBackground, games[]
+                          (id/name/icon/enabled), characters[] (id/name/theme) }
 
   js/
     core/
@@ -72,6 +72,10 @@ remote/
                           games[]; lazy-loads a game's own code on demand
       ui.js                     Shared DOM helpers + chrome (exit/mute
                           buttons, confirm modal)
+      scene.js                  Screen backgrounds: fill the screen (cover),
+                          pick portrait/landscape art, crop around a focus
+                          point and stand the character on the art's stage
+                          point (see "layered background/theme system")
       session-ui.js             SessionUI — the reusable session settings
                           picker (mode tabs + presets + custom value) and
                           the one progress-bar renderer shared by every
@@ -152,6 +156,9 @@ remote/
                           rules. Run: node remote/tests/game-logic.test.js
     theme-manager.test.js      Node tests for the layered background
                           fallback. Run: node remote/tests/theme-manager.test.js
+    scene.test.js              Node tests for background layout (cover
+                          crop, stage clamping, portrait variants, settings
+                          state). Run: node remote/tests/scene.test.js
 ```
 
 ## Letter/Word games (Hebrew Letters, English Letters)
@@ -241,11 +248,49 @@ character's own art). A character may optionally override any of it.
 4. `game.backgrounds.default` — game's default background
 5. *(none)* — the app falls back to the CSS theme gradient
 
-`state` is one of `idle | wrong | streak | finish`. No character needs
+`state` is one of `idle | wrong | streak | finish | settings` (`settings`
+maps to the character's `distant` background, shown blurred behind the
+settings screen). No character needs
 every optional background — a missing one just falls through to the next
 layer, automatically, with zero code changes. Adding a `games/math/assets/
 backgrounds/streak.webp` later immediately gives every character a shared
 streak backdrop unless they already override it.
+
+### Fitting every screen: portrait art, focus and stage
+
+Backgrounds always fill the whole screen (`object-fit: cover`), so nothing
+is letterboxed — the overflow is cropped instead. Three optional
+`character.json` fields control how (all points are `[x, y]` fractions of
+the image, `0..1`):
+
+```json
+"backgroundsPortrait": {
+  "game": "backgrounds/game-mobile.webp",
+  "tryAgain": "backgrounds/try-again-mobile.webp"
+},
+"backgroundLayout": {
+  "game": { "focus": [0.5, 0.4], "stage": [0.5, 0.55] }
+},
+"backgroundLayoutPortrait": {
+  "game": { "focus": [0.5, 0.3], "stage": [0.5, 0.56] }
+}
+```
+
+- `backgroundsPortrait` — used instead of `backgrounds[key]` whenever the
+  screen is taller than wide (phones, upright tablets); swapped live on
+  rotation. A missing portrait file falls back to the landscape one.
+- `focus` — the point kept in view when the image is cropped
+  (object-position). Default: centre.
+- `stage` — where the character's feet stand on the play screen. The
+  character is moved there, but never over the progress row above it or
+  the question card below it. Without a `stage` the character keeps its
+  normal place.
+
+`backgroundLayout` applies to the landscape images, `backgroundLayoutPortrait`
+to the portrait ones. Open the app with `?stagedebug` to see a red dot on
+the stage point while tuning. `config.json`'s `welcomeBackground`
+(`{ "src", "focus", "portrait": { "src", "focus" } }`) is shown behind Home
+and Character Select. See `BACKGROUND-ART.md` for the art rules.
 
 ## Session configuration system
 
@@ -321,7 +366,9 @@ remote/assets/characters/<id>/
                            "default" background layer)
     celebration.webp         shown on a streak event + on Results
     tryAgain.webp (file: try-again.webp)   shown briefly on a wrong answer
-    distant.webp               optional soft backdrop layer (unused today)
+    distant.webp               blurred behind the Settings screen
+    *-mobile.webp              optional portrait (9:16) versions of the
+                           above, listed in `backgroundsPortrait`
   environment/, decorations/, icons/
                              Free-form themed art. `icons/progress-star.webp`
                            is used for the 10-step progress row if present

@@ -29,6 +29,7 @@ var PlatformBoot = (function () {
     'js/platform/character-registry.js',
     'js/platform/game-registry.js',
     'js/platform/ui.js',
+    'js/platform/scene.js',
     'js/core/session-core.js',
     'js/platform/session-ui.js',
     'js/platform/navigation.js'

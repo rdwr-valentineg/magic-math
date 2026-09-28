@@ -39,17 +39,30 @@
     return CharacterManager.characterBase(ctx.baseUrl, ctx.characterId);
   }
 
-  function backgroundUrl(ctx, state) {
+  function backgroundUrl(ctx, state, orientation) {
     var resolved = ThemeManager.resolveBackground({
       character: ctx.characterManifest,
       game: cfg,
-      state: state
+      state: state,
+      orientation: orientation
     });
     if (!resolved) return null;
     if (resolved.source === 'character') {
       return CharacterManager.assetUrl(ctx.baseUrl, ctx.version, ctx.characterId, resolved.path);
     }
     return ctx.baseUrl + 'games/numbers/assets/' + resolved.path + '?v=' + encodeURIComponent(ctx.version);
+  }
+
+  // focus/stage hints for the same background — see js/platform/scene.js
+  function backgroundLayout(ctx, state, orientation) {
+    return ThemeManager.resolveLayout({ character: ctx.characterManifest, game: cfg, state: state, orientation: orientation });
+  }
+
+  // what Scene.addBackground needs: the image + its layout for an orientation
+  function sceneFor(ctx, state) {
+    return function (orientation) {
+      return { url: backgroundUrl(ctx, state, orientation), layout: backgroundLayout(ctx, state, orientation) };
+    };
   }
 
   /* ================================================================
@@ -60,6 +73,7 @@
     ensureSettingsInitialized();
 
     var screen = UI.h('section', { class: 'screen screen-settings' });
+    Scene.addBackground(screen, sceneFor(ctx, 'settings'), { soft: true });
     screen.appendChild(UI.exitButton(ctx.onExitDirect));
 
     var charCfg = CharacterRegistry.findById(ctx.characterId);
@@ -267,9 +281,7 @@
     var manifest = ctx.characterManifest;
     var screen = UI.h('section', { class: 'screen screen-game' });
 
-    var bgUrl = backgroundUrl(ctx, playUi.bgState);
-    if (bgUrl) screen.appendChild(UI.h('img', { class: 'game-bg', src: bgUrl, alt: '' }));
-    else screen.classList.add('game-bg-fallback');
+    var bg = Scene.addBackground(screen, sceneFor(ctx, playUi.bgState));
 
     var chrome = UI.h('div', { class: 'game-chrome' });
 
@@ -300,6 +312,7 @@
     }
 
     screen.appendChild(chrome);
+    Scene.stageCharacter(bg, characterWrap);
     return screen;
   }
 
@@ -439,9 +452,7 @@
     var screen = UI.h('section', { class: 'screen screen-results' });
     screen.appendChild(UI.exitButton(ctx.onExitDirect));
 
-    var bgUrl = backgroundUrl(ctx, 'finish');
-    if (bgUrl) screen.appendChild(UI.h('img', { class: 'game-bg', src: bgUrl, alt: '' }));
-    else screen.classList.add('game-bg-fallback');
+    Scene.addBackground(screen, sceneFor(ctx, 'finish'));
 
     var content = UI.h('div', { class: 'results-content' }, [
       UI.h('img', { class: 'results-character-img', src: CharacterManager.assetUrl(ctx.baseUrl, ctx.version, ctx.characterId, manifest.character.celebration), alt: '' }),

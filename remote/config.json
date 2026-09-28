@@ -1,5 +1,6 @@
 {
-  "version": "2.2.0",
+  "version": "2.3.0",
+  "welcomeBackground": { "src": "assets/global/backgrounds/welcome.webp", "focus": [0.5, 0.4] },
   "games": [
     { "id": "math", "name": "חשבון", "icon": "assets/global/icons/game-math.svg", "enabled": true },
     { "id": "hebrew-letters", "name": "אותיות בעברית", "icon": "assets/global/icons/game-hebrew-letters.svg", "enabled": true },

@@ -103,10 +103,33 @@ var Platform = (function () {
     }
   }
 
+  /* ---------------- Welcome background (Home + Character Select) ---------------- */
+
+  // config.json's optional `welcomeBackground`, shared by the two screens
+  // shown before a character is picked:
+  //   "path.webp"  or  { "src": "path.webp", "focus": [x, y],
+  //                      "portrait": { "src": "path-mobile.webp", "focus": [x, y] } }
+  // Paths are relative to remote/. A missing file just falls back to the
+  // gradient (see Scene.addBackground).
+  function addWelcomeBackground(screen) {
+    var wb = config && config.welcomeBackground;
+    if (!wb) return;
+    if (typeof wb === 'string') wb = { src: wb };
+    Scene.addBackground(screen, function (orientation) {
+      var pick = (orientation === 'portrait' && wb.portrait && wb.portrait.src) ? wb.portrait : wb;
+      if (!pick.src) return null;
+      return {
+        url: baseUrl + pick.src + '?v=' + encodeURIComponent(version),
+        layout: { focus: pick.focus || [0.5, 0.5], stage: null }
+      };
+    }, { soft: true });
+  }
+
   /* ---------------- HOME (game selection) ---------------- */
 
   function renderHome() {
     var screen = UI.h('section', { class: 'screen screen-home' });
+    addWelcomeBackground(screen);
 
     var titleBlock = UI.h('div', { class: 'welcome-header' }, [
       UI.h('div', { class: 'welcome-sparkle', 'aria-hidden': 'true', text: '✨' }),
@@ -168,6 +191,7 @@ var Platform = (function () {
 
   function renderCharacterSelect() {
     var screen = UI.h('section', { class: 'screen screen-character-select' });
+    addWelcomeBackground(screen);
     screen.appendChild(UI.exitButton(goToHome));
 
     var savedCharacter = state.selectedCharacterId || Storage.getSelectedCharacter();
