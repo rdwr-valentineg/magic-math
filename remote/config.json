@@ -1,5 +1,5 @@
 {
-  "version": "2.9.1",
+  "version": "2.9.3",
   "welcomeBackground": {
     "src": "assets/global/backgrounds/homepage.webp",
     "focus": [0.5, 0.45],
