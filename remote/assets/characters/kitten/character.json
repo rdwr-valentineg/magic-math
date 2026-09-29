@@ -51,7 +51,8 @@
   "audio": {
     "start": [
       "audio/start-01.mp3",
-      "audio/start-02.mp3"
+      "audio/start-02.mp3",
+      "audio/start-03.mp3"
     ],
     "correct": [
       "audio/correct-01.mp3",
@@ -60,12 +61,13 @@
     ],
     "wrong": [
       "audio/wrong-01.mp3",
-      "audio/wrong-02.mp3"
+      "audio/wrong-02.mp3",
+      "audio/wrong-03.mp3"
     ],
     "streak": [
-      "audio/bonus-03.mp3",
-      "audio/bonus-06.mp3",
-      "audio/bonus-09.mp3"
+      "audio/streak-01.mp3",
+      "audio/streak-01.mp3",
+      "audio/streak-01.mp3"
     ],
     "finish": [
       "audio/finish-01.mp3",
