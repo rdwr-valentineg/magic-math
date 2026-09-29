@@ -2,43 +2,27 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#6C4FD1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="refresh" content="0; url=../" />
 <title>משחקי קסם</title>
-<link rel="manifest" href="./manifest.webmanifest" />
-<link rel="apple-touch-icon" href="./assets/global/icons/icon-180.png" />
 <style>
-  :root {
-    color-scheme: light;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+  html, body { height: 100%; margin: 0; background: #6c4fd1; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: #fff;
   }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; background: #f5f2ff; }
-  body { -webkit-tap-highlight-color: transparent; }
-  img { max-width: 100%; }
-  [hidden] { display: none !important; }
+  a { color: #fff; }
 </style>
 </head>
 <body>
-  <div id="app-root"></div>
-
-  <script src="./boot.js"></script>
-  <script>
-    (function () {
-      'use strict';
-      PlatformBoot.start('./', document.getElementById('app-root')).catch(function (err) {
-        window.console && console.error('[magic-math]', err);
-      });
-
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('./sw.js').catch(function (err) {
-            window.console && console.error('[magic-math] service worker registration failed', err);
-          });
-        });
-      }
-    })();
-  </script>
+  <!--
+    Legacy address. The app used to live at /remote/; it now lives at the
+    site root. This stub keeps old bookmarks and home-screen installs
+    working, and remote/sw.js retires the old /remote/ service worker.
+    Safe to delete once nobody opens /remote/ any more.
+  -->
+  <p>המשחק עבר לכתובת חדשה... <a href="../">לחצו כאן</a>.</p>
+  <script>location.replace('../' + location.search + location.hash);</script>
 </body>
 </html>
