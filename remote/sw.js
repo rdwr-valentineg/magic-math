@@ -81,6 +81,24 @@ self.addEventListener('fetch', function (event) {
     );
     return;
   }
+  
+  // boot.js is loaded by index.html WITHOUT a ?v= query, so cache-first
+  // would pin an old copy until sw.js itself changes. Network-first keeps it
+  // current on every open; the cached copy is only the offline fallback.
+  if (/\/boot\.js$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(req).then(function (res) {
+        if (res && res.ok) {
+          var copy = res.clone();
+          getCacheName().then(function (name) {
+            caches.open(name).then(function (cache) { cache.put(req, copy); });
+          });
+        }
+        return res;
+      }).catch(function () { return caches.match(req); })
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(req).then(function (cached) {
