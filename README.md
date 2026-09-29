@@ -36,22 +36,34 @@ The app is split into three independent layers plus a shared boot sequence:
 
 ```
 (repo root = site root)
-  index.html              The entry point. Boots the platform, registers the
-                          service worker, and carries the link-preview
-                          (og:) tags used by WhatsApp/Messages/Telegram.
+  index.html              The entry point. Shows the loading screen
+                          (#app-loading: assets/global/backgrounds/
+                          loading[-mobile].webp + a progress bar, all static
+                          so it paints before any script runs), boots the
+                          platform, registers the service worker, and
+                          carries the link-preview (og:) tags used by
+                          WhatsApp/Messages/Telegram.
   manifest.webmanifest    PWA manifest (relative start_url/scope: ".")
   sw.js                   Service worker: precaches the small app shell,
                           caches everything else opportunistically on first
                           fetch (so new games/characters need no SW changes).
                           See "Offline / PWA".
-  boot.js                 PlatformBoot.start(baseUrl, rootEl), called by
-                          index.html. Fetches config.json, loads
-                          platform.css + the core platform scripts, then
-                          Platform.init(...). Everything it loads is
-                          relative to `baseUrl`, never to a hardcoded
-                          domain or path.
-  config.json             { version, welcomeBackground, games[]
+  boot.js                 PlatformBoot.start(baseUrl, rootEl, { splash }),
+                          called by index.html. Fetches config.json, loads
+                          platform.css + the core platform scripts,
+                          preloads the images Home and Character Select
+                          show (logo, welcome background, game icons,
+                          character thumbnails), then Platform.init(...)
+                          and fades the loading screen out (shown at least
+                          1.2s). Each step advances the loading bar; on
+                          failure it shows a retry button instead.
+                          Everything it loads is relative to `baseUrl`,
+                          never to a hardcoded domain or path.
+  config.json             { version, logo, welcomeBackground, games[]
                           (id/name/icon/enabled), characters[] (id/name/theme) }
+                          `logo` is drawn top-centre on every screen by
+                          navigation.js (on the play screen, inside the
+                          game's .game-topbar between exit and mute).
 
   js/
     core/
@@ -486,14 +498,16 @@ The one intentional exception is the link-preview tags in `index.html`
 `index.html` registers `sw.js` (scope: the site root), which:
 
 - precaches a small, fixed app-shell list (`index.html`, `boot.js`, the
-  manifest, and the icons) on install;
+  manifest, the icons, and the loading-screen art) on install;
 - caches everything else (platform scripts, a game's own files, character
   assets) opportunistically the first time it's actually fetched — so
   adding a new game or character later needs **no changes to `sw.js`**;
 - always fetches `config.json` network-fresh (never from the cache), since
   that's how the app itself detects a new version;
-- fetches navigations (`index.html`) and `boot.js` network-first — the two
-  requests without a `?v=` query — falling back to the cache when offline.
+- fetches every request without a `?v=` query network-first — navigations
+  (`index.html`), `boot.js`, the loading-screen art and icons that
+  `index.html` references before `config.json` is known, and game-card
+  icons — falling back to the cache when offline.
 
 Every platform/game/character asset URL carries a `?v=<config.version>`
 cache-busting query, so a new `version` means new URLs, fetched fresh and
