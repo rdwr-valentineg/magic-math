@@ -46,35 +46,27 @@
   "audio": {
     "start": [
       "audio/start-01.mp3",
-      "audio/start-02.mp3",
-      "audio/start-03.mp3",
-      "audio/start-04.mp3",
-      "audio/start-05.mp3"
+      "audio/start-02.mp3"
     ],
-    "correct": [],
+    "correct": [
+	  "audio/correct-01.mp3",
+      "audio/correct-02.mp3",
+      "audio/correct-03.mp3",
+	],
     "wrong": [
       "audio/wrong-01.mp3",
       "audio/wrong-02.mp3",
-      "audio/wrong-03.mp3",
-      "audio/wrong-04.mp3",
-      "audio/wrong-05.mp3",
-      "audio/wrong-06.mp3",
-      "audio/wrong-07.mp3"
+      "audio/wrong-03.mp3"
     ],
     "streak": [
       "audio/streak-01.mp3",
       "audio/streak-02.mp3",
-      "audio/streak-03.mp3",
-      "audio/streak-04.mp3",
-      "audio/streak-05.mp3"
+      "audio/streak-03.mp3"
     ],
     "finish": [
       "audio/finish-01.mp3",
       "audio/finish-02.mp3",
-      "audio/finish-03.mp3",
-      "audio/finish-04.mp3",
-      "audio/finish-05.mp3",
-      "audio/finish-06.mp3"
+      "audio/finish-03.mp3"
     ]
   }
 }

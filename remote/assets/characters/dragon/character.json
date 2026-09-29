@@ -69,8 +69,22 @@
       "audio/correct-06.mp3",
       "audio/correct-07.mp3"
     ],
-    "wrong": [],
-    "streak": [],
-    "finish": []
+    "wrong": [
+      "audio/wrong-01.mp3",
+      "audio/wrong-02.mp3",
+      "audio/wrong-03.mp3",
+      "audio/wrong-04.mp3"
+    ],
+    "streak": [
+      "audio/streak-01.mp3",
+      "audio/streak-02.mp3",
+      "audio/streak-03.mp3",
+      "audio/streak-04.mp3"
+    ],
+    "finish": [
+      "audio/finish-01.mp3",
+      "audio/finish-02.mp3",
+      "audio/finish-03.mp3"
+    ]
   }
 }
