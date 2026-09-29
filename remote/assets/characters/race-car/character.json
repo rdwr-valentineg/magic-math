@@ -51,7 +51,7 @@
     "correct": [
 	  "audio/correct-01.mp3",
       "audio/correct-02.mp3",
-      "audio/correct-03.mp3",
+      "audio/correct-03.mp3"
 	],
     "wrong": [
       "audio/wrong-01.mp3",
