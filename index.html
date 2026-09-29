@@ -30,17 +30,76 @@
   body { -webkit-tap-highlight-color: transparent; }
   img { max-width: 100%; }
   [hidden] { display: none !important; }
+
+  /* Loading screen — styled here, not in platform.css, so it paints before
+     boot.js has fetched anything. boot.js drives the bar and removes it. */
+  #app-loading {
+    position: fixed; inset: 0; z-index: 100;
+    background: #6c4fd1;
+    transition: opacity 0.35s ease;
+  }
+  #app-loading.is-done { opacity: 0; pointer-events: none; }
+  .app-loading-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .app-loading-bottom {
+    position: absolute; left: 0; right: 0;
+    bottom: calc(6vh + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    padding: 0 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  }
+  .app-loading-bar {
+    width: min(70vw, 320px); height: 16px; padding: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 16px rgba(40, 20, 80, 0.3);
+  }
+  .app-loading-fill {
+    width: 0; height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff9ecb, #ff9f43);
+    transition: width 0.3s ease;
+  }
+  .app-loading-error {
+    margin: 0; padding: 10px 16px; max-width: 340px;
+    border-radius: 16px; text-align: center;
+    background: rgba(255, 255, 255, 0.95); color: #3a2a63;
+    font-size: 16px; font-weight: 700;
+  }
+  .app-loading-retry {
+    border: none; border-radius: 999px; padding: 12px 28px;
+    background: linear-gradient(90deg, #4cd97b, #2fbf71); color: #fff;
+    font: inherit; font-size: 18px; font-weight: 800;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #app-loading, .app-loading-fill { transition: none; }
+  }
 </style>
 </head>
 <body>
   <div id="app-root"></div>
 
+  <div id="app-loading" role="progressbar" aria-label="טוענים" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <picture>
+      <source media="(orientation: portrait)" srcset="./assets/global/backgrounds/loading-mobile.webp" />
+      <img class="app-loading-art" src="./assets/global/backgrounds/loading.webp" alt="משחקי קסם" draggable="false" />
+    </picture>
+    <div class="app-loading-bottom">
+      <div class="app-loading-bar"><div class="app-loading-fill"></div></div>
+      <p class="app-loading-error" hidden>אופס, לא הצלחנו לטעון. בדקו חיבור לאינטרנט ונסו שוב.</p>
+      <button class="app-loading-retry" type="button" hidden onclick="location.reload()">לנסות שוב</button>
+    </div>
+  </div>
+
   <script src="./boot.js"></script>
   <script>
     (function () {
       'use strict';
-      PlatformBoot.start('./', document.getElementById('app-root')).catch(function (err) {
+      var splash = document.getElementById('app-loading');
+      PlatformBoot.start('./', document.getElementById('app-root'), { splash: splash }).catch(function (err) {
         window.console && console.error('[magic-math]', err);
+        splash.querySelector('.app-loading-bar').hidden = true;
+        splash.querySelector('.app-loading-error').hidden = false;
+        splash.querySelector('.app-loading-retry').hidden = false;
       });
 
       if ('serviceWorker' in navigator) {

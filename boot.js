@@ -1,8 +1,15 @@
 /*
  * PlatformBoot — the app's bootstrap. index.html calls
- * PlatformBoot.start('./', rootEl), which fetches config.json fresh, loads
- * platform.css and the core platform scripts (all with ?v=<version>), then
- * hands off to Platform.init(...).
+ * PlatformBoot.start('./', rootEl, { splash }), which fetches config.json
+ * fresh, loads platform.css and the core platform scripts (all with
+ * ?v=<version>), preloads the images the first two screens show (logo,
+ * welcome background, game icons, character thumbnails), then hands off to
+ * Platform.init(...).
+ *
+ * `splash` is the loading screen already on the page (index.html's
+ * #app-loading). Its bar tracks every step above; it fades out once Home is
+ * rendered underneath, after at least MIN_SPLASH_MS so it never just flickers.
+ * On failure it stays up and the returned promise rejects.
  *
  * Everything is loaded relative to `baseUrl`, never to a hardcoded domain or
  * path, so the site works unchanged on any host or sub-folder.
@@ -56,6 +63,17 @@ var PlatformBoot = (function () {
     });
   }
 
+  // Never rejects: a missing or slow image must not block the app (every
+  // screen already falls back gracefully), it just isn't warm in the cache.
+  function preloadImage(url) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      var timer = window.setTimeout(resolve, 8000);
+      img.onload = img.onerror = function () { window.clearTimeout(timer); resolve(); };
+      img.src = url;
+    });
+  }
+
   function fetchConfig(baseUrl) {
     var url = baseUrl + 'config.json?t=' + Date.now();
     return fetch(url, { cache: 'no-store' }).then(function (res) {
@@ -64,24 +82,96 @@ var PlatformBoot = (function () {
     });
   }
 
-  function start(baseUrl, rootEl) {
-    var base = normalizeBase(baseUrl);
+  // Images shown on Home and Character Select, so both open fully drawn.
+  // Needs the platform scripts (CharacterManager) to be loaded already.
+  function startupImageUrls(base, config) {
+    var v = '?v=' + encodeURIComponent(config.version);
+    var urls = [];
+    if (config.logo) urls.push(base + config.logo + v);
 
-    return fetchConfig(base).then(function (config) {
+    var wb = config.welcomeBackground;
+    if (typeof wb === 'string') wb = { src: wb };
+    if (wb) {
+      var portrait = window.innerWidth < window.innerHeight;
+      var pick = (portrait && wb.portrait && wb.portrait.src) ? wb.portrait : wb;
+      if (pick.src) urls.push(base + pick.src + v);
+    }
+
+    (config.games || []).forEach(function (g) {
+      if (g.icon) urls.push(base + g.icon);
+    });
+    (config.characters || []).forEach(function (c) {
+      urls.push(window.CharacterManager.assetUrl(base, config.version, c.id, 'character/select.webp'));
+    });
+    return urls;
+  }
+
+  var MIN_SPLASH_MS = 1200;
+
+  // Wraps the optional splash element; every method is a no-op without one.
+  function splashController(el) {
+    var shownAt = Date.now();
+    var fill = el && el.querySelector('.app-loading-fill');
+    var total = 1;
+    var done = 0;
+
+    function paint() {
+      if (!el) return;
+      var pct = Math.round(Math.min(done / total, 1) * 100);
+      if (fill) fill.style.width = pct + '%';
+      el.setAttribute('aria-valuenow', String(pct));
+    }
+
+    return {
+      // adds `n` more steps to the bar (the total isn't known up front)
+      expect: function (n) { total += n; paint(); },
+      // wraps a promise so its completion advances the bar
+      track: function (promise) {
+        return promise.then(function (value) { done++; paint(); return value; });
+      },
+      hide: function () {
+        if (!el) return Promise.resolve();
+        done = total; paint();
+        var wait = Math.max(0, MIN_SPLASH_MS - (Date.now() - shownAt));
+        return new Promise(function (resolve) {
+          window.setTimeout(function () {
+            el.classList.add('is-done');
+            window.setTimeout(function () {
+              if (el.parentNode) el.parentNode.removeChild(el);
+              resolve();
+            }, 400); // matches the fade in index.html
+          }, wait);
+        });
+      }
+    };
+  }
+
+  function start(baseUrl, rootEl, options) {
+    var base = normalizeBase(baseUrl);
+    var splash = splashController(options && options.splash);
+
+    return splash.track(fetchConfig(base)).then(function (config) {
       if (!config || !config.version) throw new Error('config.json missing version');
       var v = encodeURIComponent(config.version);
 
+      splash.expect(CORE_SCRIPTS.length + 1);
       var scriptPromises = CORE_SCRIPTS.map(function (rel) {
-        return loadScript(base + rel + '?v=' + v);
+        return splash.track(loadScript(base + rel + '?v=' + v));
       });
 
       return Promise.all([
-        loadStylesheet(base + 'styles/platform.css?v=' + v)
+        splash.track(loadStylesheet(base + 'styles/platform.css?v=' + v))
       ].concat(scriptPromises)).then(function () {
         if (!window.Platform || typeof window.Platform.init !== 'function') {
           throw new Error('platform/navigation.js did not register Platform.init');
         }
+        var images = startupImageUrls(base, config);
+        splash.expect(images.length);
+        return Promise.all(images.map(function (u) { return splash.track(preloadImage(u)); }));
+      }).then(function () {
         window.Platform.init({ root: rootEl, baseUrl: base, version: config.version, config: config });
+        return splash.hide();
+      }).then(function () {
         return config;
       });
     });

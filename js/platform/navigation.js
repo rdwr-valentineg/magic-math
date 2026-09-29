@@ -90,6 +90,7 @@ var Platform = (function () {
     else if (state.screen === SCREEN.SETTINGS) screenEl = state.activeGame.renderSettings(buildCtx());
     else if (state.screen === SCREEN.PLAY) screenEl = state.activeGame.renderPlay(buildCtx());
     else if (state.screen === SCREEN.RESULTS) screenEl = state.activeGame.renderResults(buildCtx());
+    addLogo(screenEl);
     root.appendChild(screenEl);
 
     if (state.screen === SCREEN.PLAY && state.exitModalOpen) {
@@ -100,6 +101,31 @@ var Platform = (function () {
           { label: 'יציאה', className: 'secondary-button', onClick: goToHome }
         ]
       }));
+    }
+  }
+
+  /* ---------------- Logo (every screen) ---------------- */
+
+  // config.json's optional `logo`, added top-centre to whatever screen was
+  // just rendered, so no game module has to know about it. On the play
+  // screen it goes into the game's .game-topbar, between the exit and mute
+  // buttons (the score then drops to a second row — see platform.css);
+  // everywhere else it is the screen's first item, between the corner
+  // chrome buttons.
+  function addLogo(screenEl) {
+    if (!config || !config.logo) return;
+    var logo = UI.h('img', {
+      class: 'app-logo',
+      src: baseUrl + config.logo + '?v=' + encodeURIComponent(version),
+      alt: 'משחקי קסם',
+      draggable: 'false'
+    });
+    var topbar = screenEl.querySelector('.game-topbar');
+    if (topbar) {
+      topbar.classList.add('has-logo');
+      topbar.appendChild(logo);
+    } else {
+      screenEl.insertBefore(logo, screenEl.firstChild);
     }
   }
 
@@ -132,9 +158,11 @@ var Platform = (function () {
     addWelcomeBackground(screen);
     screen.appendChild(UI.muteButton(render));
 
+    // The logo (added by render()) is the title here — the text title only
+    // shows when config.json has no logo.
     var titleBlock = UI.h('div', { class: 'welcome-header' }, [
-      UI.h('div', { class: 'welcome-sparkle', 'aria-hidden': 'true', text: '✨' }),
-      UI.h('h1', { class: 'welcome-title', text: 'משחקי קסם' }),
+      config.logo ? null : UI.h('div', { class: 'welcome-sparkle', 'aria-hidden': 'true', text: '✨' }),
+      config.logo ? null : UI.h('h1', { class: 'welcome-title', text: 'משחקי קסם' }),
       UI.h('p', { class: 'welcome-subtitle', text: 'באיזה משחק נשחק היום?' })
     ]);
 

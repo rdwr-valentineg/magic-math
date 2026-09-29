@@ -111,6 +111,45 @@ button { font-family: inherit; cursor: pointer; }
   text-shadow: 0 0 6px rgba(255, 255, 255, 0.95), 0 0 14px rgba(255, 255, 255, 0.8);
 }
 
+/* ---------------- Logo (added to every screen by navigation.js) ----------------
+   Sits in the top row, centred between the corner chrome buttons (56px +
+   16px inset each side), so its width is capped to never run under them. */
+
+.app-logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex-shrink: 0;
+  height: 64px;
+  width: auto;
+  max-width: calc(100% - 2 * 64px);
+  object-fit: contain;
+  margin: 0 auto 6px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(40, 20, 80, 0.3));
+}
+
+/* Home: the logo is the page title, so it gets hero size */
+.screen-home .app-logo { height: clamp(96px, 22vh, 170px); margin-bottom: 4px; }
+
+/* Results is vertically centred; keep the logo pinned at the top */
+.screen-results .app-logo { margin-bottom: auto; }
+.screen-results .results-content { margin-bottom: auto; }
+
+/* Play: exit | logo | mute on the first row, score centred beneath */
+.game-topbar.has-logo {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "exit logo mute" "score score score";
+  align-items: center;
+  justify-items: center;
+  row-gap: 6px;
+}
+.game-topbar.has-logo .chrome-btn--exit { grid-area: exit; }
+.game-topbar.has-logo .chrome-btn--mute { grid-area: mute; }
+.game-topbar.has-logo .hud-score { grid-area: score; }
+.game-topbar.has-logo .app-logo { grid-area: logo; height: 52px; max-width: 100%; margin: 0 8px; }
+
 /* ---------------- Welcome ---------------- */
 
 .welcome-header { text-align: center; margin-bottom: 12px; }
@@ -289,7 +328,7 @@ button { font-family: inherit; cursor: pointer; }
   background: rgba(255,255,255,0.22);
   border-radius: var(--radius-lg);
   padding: 14px;
-  margin: 36px auto 8px;
+  margin: 8px auto 8px;
   max-width: 480px;
   width: 100%;
 }

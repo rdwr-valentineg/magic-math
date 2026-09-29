@@ -3,14 +3,17 @@
  *
  * Strategy:
  *  - A small, fixed app-shell list is precached on install (index.html,
- *    boot.js, manifest, icons). Everything else (platform/*.js, games/<id>/*,
+ *    boot.js, manifest, icons, loading-screen art). Everything else
+ *    (platform/*.js, games/<id>/*,
  *    assets/characters/<id>/*) is cached the first time it's fetched, so
  *    adding a game or character never needs a change here.
  *  - Every platform/game/character asset URL carries `?v=<config.version>`
  *    (see boot.js, character-manager.js), so a version bump means new URLs,
  *    fetched fresh and cached under cache-first — no manual invalidation.
- *  - The only requests without that query are navigations (index.html) and
- *    boot.js: both are network-first, with the cached copy used offline.
+ *  - Requests without that query (navigations, boot.js, the loading-screen
+ *    art and icons index.html references before config.json is known,
+ *    game-card icons) are network-first, with the cached copy used offline
+ *    — so changing one of those files is picked up without a version bump.
  *  - config.json is never served from the cache: the app fetches it fresh
  *    every time to detect a new version.
  *  - The cache NAME carries the version, so a bump also drops the old cache
@@ -31,7 +34,9 @@ var PRECACHE = [
   './manifest.webmanifest',
   './assets/global/icons/icon-192.png',
   './assets/global/icons/icon-512.png',
-  './assets/global/icons/icon-180.png'
+  './assets/global/icons/icon-180.png',
+  './assets/global/backgrounds/loading.webp',
+  './assets/global/backgrounds/loading-mobile.webp'
 ];
 
 var cacheNamePromise = null;
@@ -85,14 +90,14 @@ self.addEventListener('fetch', function (event) {
   if (url.origin !== self.location.origin) return; // leave third-party requests alone
   if (/\/config\.json$/.test(url.pathname)) return; // always network-fresh
 
-  // Network-first: navigations and boot.js (the two requests without ?v=).
+  // Network-first: navigations and every other request without ?v=.
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req).catch(function () { return caches.match('./index.html'); })
     );
     return;
   }
-  if (/\/boot\.js$/.test(url.pathname)) {
+  if (!url.searchParams.has('v')) {
     event.respondWith(
       fetch(req)
         .then(function (res) { putInCache(req, res); return res; })
@@ -101,7 +106,7 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Cache-first for everything else (all versioned via ?v=).
+  // Cache-first for everything versioned via ?v=.
   event.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;
