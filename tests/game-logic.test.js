@@ -1,6 +1,6 @@
 /*
  * Plain Node test for MagicMathCore.GameSession — no dependencies, no
- * framework. Run with: node remote/tests/game-logic.test.js
+ * framework. Run with: node tests/game-logic.test.js
  *
  * Focus: the streak/bonus rules — a streak event fires whenever the
  * consecutive-correct count becomes a multiple of a configurable

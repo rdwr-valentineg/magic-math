@@ -1,7 +1,7 @@
 /*
  * NumbersLogic — pure-logic question generation for both V1 activities,
  * Count the Objects and Number to Quantity (spec §15-16). No DOM access,
- * Node-testable (see remote/tests/numbers-logic.test.js) exactly like
+ * Node-testable (see tests/numbers-logic.test.js) exactly like
  * js/core/math-core.js.
  *
  * Every generator takes the CONFIGURED range (rangeMin/rangeMax, which may

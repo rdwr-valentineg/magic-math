@@ -1,0 +1,76 @@
+# Auto-bumps config.json "version" (patch level) on every push to main that
+# changes the app, unless that push already changed the version itself.
+# Every asset URL carries ?v=<version>, so this is what makes returning
+# players (and installed home-screen apps) pick up new art/audio/code
+# without clearing anything in the browser.
+#
+# The bump commit is pushed with GITHUB_TOKEN, which does not trigger
+# workflows again, so this never loops. GitHub Pages still rebuilds from it.
+
+name: Bump version
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'tests/**'
+      - 'CNAME'
+      - '.gitignore'
+      - '.nojekyll'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-version
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump patch version unless this push already changed it
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          CFG=config.json
+          read_version() { node -e 'const fs=require("fs");const s=fs.readFileSync(0,"utf8");process.stdout.write(JSON.parse(s).version||"")'; }
+
+          NOW=$(read_version < "$CFG")
+          PREV=""
+          # The version lived in remote/config.json before the move to the root.
+          if [ -n "${BEFORE//0/}" ]; then
+            for p in "$CFG" "remote/$CFG"; do
+              if git cat-file -e "$BEFORE:$p" 2>/dev/null; then PREV=$(git show "$BEFORE:$p" | read_version); break; fi
+            done
+          fi
+
+          if [ -n "$PREV" ] && [ "$PREV" != "$NOW" ]; then
+            echo "Version already changed in this push ($PREV -> $NOW); nothing to do."
+            exit 0
+          fi
+
+          NEXT=$(node -e '
+            const fs=require("fs"); const p=process.argv[1];
+            const s=fs.readFileSync(p,"utf8");
+            const m=s.match(/"version"\s*:\s*"(\d+)\.(\d+)\.(\d+)"/);
+            if(!m){ console.error("No x.y.z version in "+p); process.exit(1); }
+            const next=`${m[1]}.${m[2]}.${+m[3]+1}`;
+            fs.writeFileSync(p, s.replace(m[0], `"version": "${next}"`));
+            process.stdout.write(next);
+          ' "$CFG")
+          echo "Bumped $NOW -> $NEXT"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$CFG"
+          git commit -m "chore: bump version to $NEXT"
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -1,7 +1,7 @@
 /*
  * Plain Node test for the background layout logic — Scene's cover/stage
  * math and ThemeManager.resolveLayout / the `settings` state. No browser.
- * Run with: node remote/tests/scene.test.js
+ * Run with: node tests/scene.test.js
  */
 
 var assert = require('assert');

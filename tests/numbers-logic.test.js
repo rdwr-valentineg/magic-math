@@ -1,6 +1,6 @@
 /*
  * Plain Node test for NumbersLogic — no dependencies, no framework.
- * Run with: node remote/tests/numbers-logic.test.js
+ * Run with: node tests/numbers-logic.test.js
  */
 
 var assert = require('assert');

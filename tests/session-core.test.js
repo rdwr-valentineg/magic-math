@@ -1,6 +1,6 @@
 /*
  * Plain Node test for MagicMathSessionCore.SessionManager — no dependencies,
- * no framework. Run with: node remote/tests/session-core.test.js
+ * no framework. Run with: node tests/session-core.test.js
  *
  * Focus: the three session modes (questions/score/time) end at the right
  * moment, scoring/streak match MagicMathCore.GameSession's existing rules

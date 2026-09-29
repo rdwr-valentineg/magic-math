@@ -1,72 +1,55 @@
 # משחקי קסם (Magic Math platform)
 
-A mobile-first, Hebrew (RTL) educational game platform for children ~3-7,
-split into two layers:
+A mobile-first, Hebrew (RTL) educational game platform for children ~3-7:
+a portable, installable, offline-capable PWA (config, platform code, games,
+and every character's art/audio), hosted on GitHub Pages at
+**https://games.valice.uk**.
 
-- **`distribution/magic-math.html`** — a single, self-contained launcher
-  file. This is the *only* file ever sent to a user directly (email,
-  AirDrop, a download link). It has its own tiny loading screen and
-  friendly error screen, and knows one thing: a URL to fetch the actual
-  platform from (`DEFAULT_REMOTE_BASE`, overridable with `?base=...`).
-- **`remote/`** — the real platform: a portable, installable, offline-
-  capable PWA (config, platform code, games, and every character's
-  art/audio), hosted on GitHub Pages (or any static host, or a custom
-  domain — see "Portability" below). The launcher fetches it at runtime and
-  boots it into itself, no iframe involved. **`remote/` can also be opened
-  directly** (`remote/index.html`) as its own standalone, installable app.
+To share the game, send that link. Push changes to `main` and every player
+gets them on their next open — nobody ever needs to clear anything in their
+browser (see "Offline / PWA" and "Releasing changes" below).
 
-This means the platform can be fixed, restyled, given new games/characters,
-or reskinned by pushing to `remote/` and bumping a version number —
-**without ever re-sending `magic-math.html` to anyone**.
+## Repo layout
 
-## Repo root
-
-Everything above lives under `remote/` and `distribution/`; a handful of
-files sit at the repo root purely for GitHub Pages hosting and are not part
-of the app itself:
+The repo root **is** the site. Besides the app itself (see "Architecture"
+below), a few files exist for hosting and housekeeping only:
 
 ```
-index.html          Redirects "/" to "./remote/" (client-side + a meta
-                    refresh). Exists only because GitHub Pages serves
-                    README.md as the homepage whenever no index.html is
-                    present — this repo's real homepage is the app.
-readme/index.html    A static docs page at the clean "/readme" URL: fetches
-                    README.md at runtime and renders it client-side with
-                    marked.js (falls back to a plain link to the raw file
-                    if that fails). Kept as a separate file/folder from
-                    README.md itself since GitHub's own rendering of the
-                    .md file and this styled, linkable page serve different
-                    audiences.
 CNAME                The custom domain for GitHub Pages (games.valice.uk).
-.nojekyll            Tells GitHub Pages not to run Jekyll processing (so
-                    filenames/folders starting with an underscore, if any
-                    are ever added, are served as-is).
+                    Required while Pages deploys from the main branch —
+                    deleting it drops the custom domain.
+.nojekyll            Tells GitHub Pages not to run Jekyll processing, so
+                    files are served exactly as committed.
+remote/              Legacy stub. The app lived at /remote/ until 2.10.0;
+                    remote/index.html redirects old bookmarks/home-screen
+                    installs to "/", and remote/sw.js retires the old
+                    /remote/ service worker. Safe to delete once nobody
+                    opens /remote/ any more.
+.github/workflows/   bump-version.yml (auto version bump, see "Releasing
+                    changes") and tests.yml (runs tests/ on every push/PR).
+tests/               Plain-Node tests (served publicly too; harmless).
 ```
-
-Every one of these is self-documented with its own inline comment — read
-the file itself for the full reasoning.
 
 ## Architecture: platform, games, characters
 
 The app is split into three independent layers plus a shared boot sequence:
 
 ```
-remote/
-  index.html              Standalone entry point (visit this directly to
-                          install/use the PWA). Registers the service
-                          worker; everything else is identical to what the
-                          launcher boots.
+(repo root = site root)
+  index.html              The entry point. Boots the platform, registers the
+                          service worker, and carries the link-preview
+                          (og:) tags used by WhatsApp/Messages/Telegram.
   manifest.webmanifest    PWA manifest (relative start_url/scope: ".")
   sw.js                   Service worker: precaches the small app shell,
                           caches everything else opportunistically on first
                           fetch (so new games/characters need no SW changes).
-  boot.js                 PlatformBoot.start(baseUrl, rootEl) — the ONE
-                          shared bootstrap both distribution/magic-math.html
-                          and remote/index.html call. Fetches config.json,
-                          loads platform.css + the core platform scripts,
-                          then Platform.init(...). Everything it loads is
-                          relative to `baseUrl`, never to its own location —
-                          that's what makes remote/ portable.
+                          See "Offline / PWA".
+  boot.js                 PlatformBoot.start(baseUrl, rootEl), called by
+                          index.html. Fetches config.json, loads
+                          platform.css + the core platform scripts, then
+                          Platform.init(...). Everything it loads is
+                          relative to `baseUrl`, never to a hardcoded
+                          domain or path.
   config.json             { version, welcomeBackground, games[]
                           (id/name/icon/enabled), characters[] (id/name/theme) }
 
@@ -92,7 +75,7 @@ remote/
                           repeating the same clip twice in a row
       theme-manager.js        Resolves which background to show for a
                           game+character+state — pure logic, Node-testable
-                          (see remote/tests/theme-manager.test.js)
+                          (see tests/theme-manager.test.js)
       character-manager.js     Loads/preloads a character's assets
       character-registry.js     Accessor over config.json's characters[]
       game-registry.js          Drives the Home screen from config.json's
@@ -127,7 +110,7 @@ remote/
                           (all/custom letters), unique-target-word tracking
                           for a session, and the three activities' choice/
                           distractor builders (Node-testable, see
-                          remote/tests/letters-core-logic.test.js)
+                          tests/letters-core-logic.test.js)
       engine.js                 LettersCoreEngine.createGame(options) — the
                           shared UI (settings/play/results) for all three
                           activities (First Letter, Entire Word,
@@ -163,7 +146,7 @@ remote/
       content.js                Data-driven object types (emoji placeholder
                           per type)
       logic.js                   Pure-logic question generation for both
-                          activities (Node-testable, see remote/tests/
+                          activities (Node-testable, see tests/
                           numbers-logic.test.js)
       game.js                     Both activities' UI, the range picker
                           (dual slider + synced numeric fields), and the
@@ -182,12 +165,12 @@ remote/
 
   tests/
     game-logic.test.js         Node tests for math-core.js's scoring/streak
-                          rules. Run: node remote/tests/game-logic.test.js
+                          rules. Run: node tests/game-logic.test.js
     theme-manager.test.js      Node tests for the layered background
-                          fallback. Run: node remote/tests/theme-manager.test.js
+                          fallback. Run: node tests/theme-manager.test.js
     scene.test.js              Node tests for background layout (cover
                           crop, stage clamping, portrait variants, settings
-                          state). Run: node remote/tests/scene.test.js
+                          state). Run: node tests/scene.test.js
 ```
 
 ## Letter/Word games (Hebrew Letters, English Letters)
@@ -407,7 +390,7 @@ on every streak event, whatever the streak count.
 ## Character folder layout
 
 ```
-remote/assets/characters/<id>/
+assets/characters/<id>/
   character.json           Asset manifest for this character (paths below
                            are relative to this file's own folder).
   character/
@@ -449,74 +432,58 @@ their own reactions, never a game's teaching material.
 
 ## How to add a game to the platform
 
-1. Create `remote/games/<id>/config.js` — at minimum
+1. Create `games/<id>/config.js` — at minimum
    `window.GameConfigs = window.GameConfigs || {}; window.GameConfigs.<id> = { id: '<id>', enabled: false };`
    for a placeholder, or a full settings object (see `games/math/config.js`)
    plus a `scripts: [...]` array for any pure-logic dependency it needs
    loaded first (paths relative to the platform's own root).
-2. Add `remote/games/<id>/game.js` that registers
+2. Add `games/<id>/game.js` that registers
    `window.Games.<id> = { renderSettings, renderPlay, renderResults }` (see
    `games/math/game.js` for the contract — each function receives a `ctx`
    with `baseUrl`/`version`/`characterId`/`characterManifest`/`session` and
    navigation callbacks, and returns a full `<section class="screen ...">`
    element). Only needed once the game is ready to be playable.
-3. Add one entry to `remote/config.json`'s `games[]` array:
+3. Add one entry to `config.json`'s `games[]` array:
    `{ "id": "<id>", "name": "...", "icon": "assets/global/icons/....svg", "enabled": true }`.
-4. Bump `version` in `config.json` and push.
+4. Push. (`version` is bumped automatically — see "Releasing changes".)
 
 No platform code needs to change — the Home screen is generated entirely
 from `config.json`'s `games[]`.
 
 ## How to add a character
 
-1. Create `remote/assets/characters/<id>/` following the layout above. At
+1. Create `assets/characters/<id>/` following the layout above. At
    minimum you need `character.json` + the 5 `character/*.webp` poses.
-2. Add an entry to `remote/config.json`'s `characters` array:
+2. Add an entry to `config.json`'s `characters` array:
    ```json
    { "id": "robot", "name": "רובוט",
      "theme": { "from": "#e6f6ff", "to": "#dfe8ff", "accent": "#4fa8ff", "dark": false } }
    ```
    `theme.dark: true` switches the app's gradient screens to light-on-dark
    text — use it for a visually dark character.
-3. Bump `version` in `config.json` and push.
+3. Push. (`version` is bumped automatically — see "Releasing changes".)
 
 No game or platform code ever needs to change — a character works with
 every game automatically, and any game works with a character that has no
 custom art at all (it just falls back to the game's own world, or the CSS
 gradient).
 
-## Portability — no domain/path is ever hardcoded in `remote/`
+## Portability — no domain/path is ever hardcoded
 
-Everything under `remote/` is built from a `baseUrl` passed in at boot time
-(`PlatformBoot.start(baseUrl, rootEl)`) — never from its own script
-location, never from a hardcoded domain. The exact same `remote/` folder
-can be:
+Everything is built from a `baseUrl` passed in at boot time
+(`PlatformBoot.start('./', rootEl)`) — never from a hardcoded domain. The
+same files work unchanged at a custom domain root, at any GitHub Pages
+sub-path (`https://<user>.github.io/<repo>/`), or opened from a local
+server. `manifest.webmanifest` uses relative `start_url`/`scope` (`"."`)
+for the same reason.
 
-- opened directly at `remote/index.html` (installable, offline-capable),
-- served from GitHub Pages at any sub-path,
-- served from a custom domain root,
-- or fetched cross-origin by the launcher —
-
-without editing a single line of application code. `manifest.webmanifest`
-uses relative `start_url`/`scope` (`"."`) for the same reason.
-
-The intentional exceptions are the two files in `distribution/`, whose
-entire job is to point at wherever `remote/` is actually hosted:
-
-- `magic-math.html` hardcodes one `DEFAULT_REMOTE_BASE` constant (what a
-  launcher fundamentally needs to do its job), overridable with `?base=...`
-  for local testing.
-- `share.html` is plain static HTML (no script, so it still works inside a
-  restricted preview that won't run JavaScript, e.g. an AirDrop/Messages
-  Quick Look) with a hardcoded `<a href="...magic-math.html">` pointing at
-  the same hosted launcher — no override mechanism, so it has to be edited
-  by hand if the hosting URL ever changes. **These two URLs are not derived
-  from one another** — keep them in sync manually if you move where
-  `distribution/` is hosted.
+The one intentional exception is the link-preview tags in `index.html`
+(`og:url`, `og:image`): chat apps require absolute URLs there, so they name
+`https://games.valice.uk/`. Update them if the site ever moves.
 
 ## Offline / PWA
 
-Visiting `remote/index.html` directly registers `remote/sw.js`, which:
+`index.html` registers `sw.js` (scope: the site root), which:
 
 - precaches a small, fixed app-shell list (`index.html`, `boot.js`, the
   manifest, and the icons) on install;
@@ -525,19 +492,24 @@ Visiting `remote/index.html` directly registers `remote/sw.js`, which:
   adding a new game or character later needs **no changes to `sw.js`**;
 - always fetches `config.json` network-fresh (never from the cache), since
   that's how the app itself detects a new version;
-- serves the cached shell page for navigations when offline.
+- fetches navigations (`index.html`) and `boot.js` network-first — the two
+  requests without a `?v=` query — falling back to the cache when offline.
 
-Because every platform/game/character asset URL already carries a
-`?v=<config.version>` cache-busting query, bumping `version` naturally
-fetches+caches fresh copies under the existing cache-first strategy — the
-service worker's own cache *name* is only needed to invalidate `index.html`
-and `boot.js`, the two files requested without that query.
+Every platform/game/character asset URL carries a `?v=<config.version>`
+cache-busting query, so a new `version` means new URLs, fetched fresh and
+cached under the existing cache-first strategy. The cache *name* also
+carries the version, so the previous cache is dropped when the worker
+updates.
 
-The launcher (`distribution/magic-math.html`) never registers a service
-worker — it's either opened via `file://` or lives on a different origin
-than `remote/`, and same-origin is a hard requirement for SW registration.
-Offline/installable applies to visiting the platform's real hosted URL
-directly, by design.
+## Releasing changes
+
+**The version bump is automatic.** `.github/workflows/bump-version.yml`
+raises the patch number in `config.json` (e.g. 2.10.0 → 2.10.1) on every
+push to `main` that changes the app, unless that push already changed
+`version` itself. So: push, and everyone gets the change on their next
+open. Bump by hand only for a minor/major jump — the workflow then skips
+that push. The bot's commit lands on GitHub, so `git pull` before your next
+local commit.
 
 ## Preserving the Math game
 
@@ -559,39 +531,22 @@ to reproduce the exact same 3-6-9 cadence with the shipped default of
 
 ## Local testing
 
-`remote/` needs to be served with CORS enabled for a locally-opened
-launcher to reach it (GitHub Pages does this automatically in production).
-A plain `python3 -m http.server` does **not** send CORS headers, so for a
-realistic local test, serve the repo root with a tiny wrapper that adds one:
+Serve the repo root with any static server and open it:
 
-```py
-# serve-with-cors.py
-import http.server, functools
-class CORSHandler(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
-        super().end_headers()
-http.server.test(HandlerClass=functools.partial(CORSHandler, directory='.'), port=8899)
+```sh
+python3 -m http.server 8899
+# then open http://localhost:8899/
 ```
-
-Then either:
-
-- Open `http://localhost:8899/remote/index.html` directly (the standalone
-  PWA path), or
-- Open
-  `distribution/magic-math.html?base=http://localhost:8899/remote/`
-  (the launcher path) — or `file:///path/to/distribution/magic-math.html?base=http://localhost:8899/remote/`
-  to test it exactly as a double-clicked emailed file would behave.
 
 ## Running the tests
 
 ```sh
-node remote/tests/game-logic.test.js
-node remote/tests/theme-manager.test.js
-node remote/tests/session-core.test.js
-node remote/tests/letters-core-logic.test.js
-node remote/tests/numbers-logic.test.js
+node --test tests/*.test.js
 ```
+
+(Each file also runs on its own, e.g. `node tests/game-logic.test.js`.)
+The same suite runs on GitHub for every push and pull request
+(`.github/workflows/tests.yml`).
 
 `game-logic.test.js` covers Math's scoring/streak rules (score floor at 0,
 streak events firing on every multiple of the configured threshold,
@@ -606,37 +561,20 @@ builders — including Letter → Image's "exactly one correct image"
 invariant) shared by both Hebrew Letters and English Letters.
 `numbers-logic.test.js` covers Numbers' pure-logic question generation
 (quantities respect the practical render cap, zero is reachable, etc.).
+`scene.test.js` covers background layout. `character-audio.test.js` checks
+every character in `config.json`: all five audio events have clips, every
+listed file exists, nothing in `audio/` is unlisted, and no event lists the
+same file twice; clips shared byte-for-byte between characters are printed
+as a warning.
 
-## Deploying `remote/` to GitHub Pages
+## Deploying to GitHub Pages
 
-1. Push this repository to GitHub.
-2. In the repository, go to **Settings → Pages**, set **Source** to
+1. In the repository, go to **Settings → Pages**, set **Source** to
    `Deploy from a branch`, choose `main` and `/ (root)`, then **Save**.
-3. Once Pages is live, `remote/` is served at
-   `https://<user>.github.io/<repo>/remote/`. If you forked this under a
-   different account/repo name, update both of the hardcoded URLs described
-   under "Portability" above: `DEFAULT_REMOTE_BASE` in
-   `distribution/magic-math.html`, and the `<a href>` in
-   `distribution/share.html` (which should point at your redeployed
-   `magic-math.html`).
-4. To serve the platform from a custom subdomain instead, point it at
-   `remote/` (or its contents, at the domain root) — no code changes are
-   needed either way, since nothing under `remote/` hardcodes its own URL.
+2. Keep `CNAME` in the repo for the custom domain (games.valice.uk).
+3. Pages redeploys on every push to `main`, including the version-bump
+   bot's commits.
 
-## Distributing the game
-
-Send people `distribution/magic-math.html` — as an email attachment, a
-download link, however you like. They can double-click it to open locally,
-or you can host it anywhere (it does not need to live next to `remote/`).
-As long as they have internet access on first open, the game loads.
-
-Alternatively, share the direct URL to `remote/index.html` (wherever it's
-hosted) — visitors can install it to their home screen and play offline
-after the first load.
-
-For sharing a *link* rather than a file (a chat message, a QR code), point
-people at the hosted `distribution/share.html` instead: it's a small,
-script-free "▶ שחקו עכשיו!" card that still renders (and its link still
-works) inside a restricted in-app preview that won't run JavaScript —
-tapping it hands off to a real browser, where `magic-math.html` loads
-normally.
+If forked to another account/repo, the site works as-is at
+`https://<user>.github.io/<repo>/`; only the `og:` link-preview URLs in
+`index.html` (and `CNAME`) name the domain.

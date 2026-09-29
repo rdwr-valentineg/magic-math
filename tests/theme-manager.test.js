@@ -1,6 +1,6 @@
 /*
  * Plain Node test for ThemeManager.resolveBackground — no dependencies, no
- * browser, no real assets. Run with: node remote/tests/theme-manager.test.js
+ * browser, no real assets. Run with: node tests/theme-manager.test.js
  *
  * Verifies the 5-layer fallback chain using fake manifests, which is a far
  * more reliable way to check "character with no custom background" and

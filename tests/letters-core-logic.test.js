@@ -1,7 +1,7 @@
 /*
  * Plain Node test for LettersCoreLogic — the shared engine behind Hebrew
  * Letters and English Letters. No dependencies, no framework.
- * Run with: node remote/tests/letters-core-logic.test.js
+ * Run with: node tests/letters-core-logic.test.js
  */
 
 var assert = require('assert');

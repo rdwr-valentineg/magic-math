@@ -39,6 +39,19 @@ var AudioManager = (function () {
 
   function isMuted() { return muted; }
 
+  // Random clip from the pool, avoiding an immediate repeat of `previous`
+  // when there's any alternative. Picks from the DISTINCT entries, so a
+  // manifest that lists the same file twice can never cause a retry loop.
+  function pickClip(relList, previous) {
+    var unique = [];
+    for (var i = 0; i < relList.length; i++) {
+      if (unique.indexOf(relList[i]) === -1) unique.push(relList[i]);
+    }
+    var candidates = unique.filter(function (r) { return r !== previous; });
+    if (!candidates.length) candidates = unique;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
   // Plays one random clip from `relList` (paths relative to `basePath`),
   // tracked under `eventKey` so a repeat pick can be avoided when the pool
   // has more than one clip. Never overlaps a previous reaction: any
@@ -47,15 +60,7 @@ var AudioManager = (function () {
   function playEvent(basePath, version, eventKey, relList) {
     if (muted || !relList || !relList.length) return;
 
-    var rel;
-    if (relList.length === 1) {
-      rel = relList[0];
-    } else {
-      var previous = lastRelByKey[eventKey];
-      do {
-        rel = relList[Math.floor(Math.random() * relList.length)];
-      } while (rel === previous);
-    }
+    var rel = pickClip(relList, lastRelByKey[eventKey]);
     lastRelByKey[eventKey] = rel;
 
     var src = basePath + rel + '?v=' + encodeURIComponent(version);
@@ -72,9 +77,12 @@ var AudioManager = (function () {
     } catch (e) { /* ignore */ }
   }
 
-  return { init: init, setMuted: setMuted, isMuted: isMuted, playEvent: playEvent };
+  return { init: init, setMuted: setMuted, isMuted: isMuted, playEvent: playEvent, pickClip: pickClip };
 })();
 
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AudioManager;
+}
 if (typeof window !== 'undefined') {
   window.AudioManager = AudioManager;
 }

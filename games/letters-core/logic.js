@@ -1,7 +1,7 @@
 /*
  * LettersCoreLogic — pure-logic engine shared by every letter/word game
  * (Hebrew Letters, English Letters, and any future language). No DOM
- * access, Node-testable (see remote/tests/letters-core-logic.test.js),
+ * access, Node-testable (see tests/letters-core-logic.test.js),
  * exactly like js/core/math-core.js.
  *
  * A "target word" is the single concept all three activities (First

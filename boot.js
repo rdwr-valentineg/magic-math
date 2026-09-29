@@ -1,18 +1,11 @@
 /*
- * PlatformBoot — the single shared bootstrap used by BOTH entry points:
- *   - remote/index.html          calls PlatformBoot.start('./', rootEl)
- *   - distribution/magic-math.html (the emailed/AirDropped launcher) calls
- *     PlatformBoot.start(REMOTE_BASE, rootEl) after loading this very file
- *     from its one hardcoded remote base.
+ * PlatformBoot — the app's bootstrap. index.html calls
+ * PlatformBoot.start('./', rootEl), which fetches config.json fresh, loads
+ * platform.css and the core platform scripts (all with ?v=<version>), then
+ * hands off to Platform.init(...).
  *
- * Having one shared loader means both entry points always agree on which
- * platform files exist and in what order — no risk of them drifting apart
- * as games/platform modules are added later.
- *
- * Everything here is loaded relative to `baseUrl`, never to this script's
- * own location — that is what lets the exact same remote/ folder be
- * fetched cross-origin by the launcher AND visited directly at its own
- * origin, unmodified.
+ * Everything is loaded relative to `baseUrl`, never to a hardcoded domain or
+ * path, so the site works unchanged on any host or sub-folder.
  */
 
 var PlatformBoot = (function () {

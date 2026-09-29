@@ -17,7 +17,7 @@
  * the normal flex layout puts it.
  *
  * coverPoint() and stageOffset() are pure math, Node-testable (see
- * remote/tests/scene.test.js); the rest touches the DOM.
+ * tests/scene.test.js); the rest touches the DOM.
  *
  * Tip for tuning a new background: open the app with `?stagedebug` in the
  * URL — a red dot marks the stage point on the play screen.

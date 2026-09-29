@@ -109,7 +109,7 @@ var Platform = (function () {
   // shown before a character is picked:
   //   "path.webp"  or  { "src": "path.webp", "focus": [x, y],
   //                      "portrait": { "src": "path-mobile.webp", "focus": [x, y] } }
-  // Paths are relative to remote/. A missing file just falls back to the
+  // Paths are relative to the site root. A missing file just falls back to the
   // gradient (see Scene.addBackground).
   function addWelcomeBackground(screen) {
     var wb = config && config.welcomeBackground;

@@ -2,7 +2,7 @@
  * ThemeManager — resolves which background to show for a given
  * game+character+state combination, walking a 5-layer fallback chain. Pure
  * logic, no DOM/network access, so it is Node-testable (see
- * remote/tests/theme-manager.test.js) exactly like js/core/math-core.js.
+ * tests/theme-manager.test.js) exactly like js/core/math-core.js.
  *
  * Layers, checked in order:
  *   1. character.backgrounds[state]   — character's state-specific override

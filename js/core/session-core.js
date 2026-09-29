@@ -2,7 +2,7 @@
  * SessionManager — pure-logic, game-agnostic session progression: scoring,
  * streak, and "should the session keep going" for all three session modes
  * (questions / score / time). No DOM access anywhere in this file, so it is
- * Node-testable (see remote/tests/session-core.test.js) exactly like
+ * Node-testable (see tests/session-core.test.js) exactly like
  * js/core/math-core.js.
  *
  * Deliberately knows NOTHING about exercises/questions content — a game

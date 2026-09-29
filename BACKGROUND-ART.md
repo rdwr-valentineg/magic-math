@@ -11,7 +11,7 @@ remains a good reference for the export settings/crop below.
 
 ## Images to make
 
-Each character needs 8 files in `remote/assets/characters/<id>/backgrounds/`:
+Each character needs 8 files in `assets/characters/<id>/backgrounds/`:
 
 | File | Size | Shown when |
 |---|---|---|
@@ -34,7 +34,7 @@ Checklist:
 - [x] **robot** — 8 files
 - [x] **rainbow** — 8 files (own art; no longer a copy of unicorn's)
 - [x] **unicorn** — 8 files
-- [x] **global welcome** — `remote/assets/global/backgrounds/homepage.webp` (1920×1080) and `homepage-mobile.webp` (1080×1920), behind Home and Character Select. Wired in `config.json`'s `welcomeBackground`.
+- [x] **global welcome** — `assets/global/backgrounds/homepage.webp` (1920×1080) and `homepage-mobile.webp` (1080×1920), behind Home and Character Select. Wired in `config.json`'s `welcomeBackground`.
 
 All 58 images are in place — this checklist is complete. Keep the rules
 below in mind for the *next* character/game world added. Export as WebP

@@ -1,7 +1,7 @@
 /*
  * MagicMathCore — pure Math-game logic (question generation + scoring/streak
  * state machine). No DOM access anywhere in this file, so it can be
- * `require()`d from Node (see remote/tests/game-logic.test.js) without a
+ * `require()`d from Node (see tests/game-logic.test.js) without a
  * browser, and is loaded as a plain classic script in the browser too.
  */
 
